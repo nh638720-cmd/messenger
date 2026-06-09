@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booeb.com - কেনাকাটা শুরু করুন</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Hind Siliguri', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            top: 0!important;
+        }
+
+       .goog-te-banner-frame,.goog-logo-link,.goog-te-gadget {
+            display: none!important;
+        }
+
+       .bismillah {
+            font-family: 'Amiri', serif;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            padding: 20px 10px 10px;
+            background: linear-gradient(135deg, #d4af37, #f2d377);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+       .subtitle {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+       .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+       .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+       .logo-section img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+       .logo-section h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+       .language-selector {
+            position: relative;
+        }
+
+       .lang-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            font-family: 'Hind Siliguri', sans-serif;
+            transition: 0.3s;
+        }
+
+       .lang-btn:hover {
+            background: #2980b9;
+        }
+
+        #google_translate_element {
+            position: absolute;
+            top: 45px;
+            right: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 10px;
+            display: none;
+        }
+
+       .main-options {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+       .option-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: 0.3s;
+        }
+
+       .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+
+       .option-card h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+       .btn-start {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: 'Hind Siliguri', sans-serif;
+            transition: 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+       .btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+       .banner-section {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+       .banner {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+       .banner img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+
+       .banner-options {
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            background: #fafafa;
+        }
+
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            margin-top: 50px;
+        }
+
+       .admin-link {
+            color: #95a5a6;
+            text-decoration: none;
+            font-size: 13px;
+            margin-top: 10px;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+       .admin-link:hover {
+            color: white;
+        }
+
+       .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+       .modal.active {
+            display: flex;
+        }
+
+       .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+       .modal-content h3 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+       .form-group {
+            margin-bottom: 15px;
+        }
+
+       .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+       .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: 'Hind Siliguri', sans-serif;
+        }
+
+       .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Hind Siliguri', sans-serif;
+            margin-right: 10px;
+        }
+
+       .btn:hover {
+            background: #2980b9;
+        }
+
+       .btn-danger {
+            background: #e74c3c;
+        }
+
+       .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        @media (max-width: 768px) {
+           .bismillah { font-size: 24px; }
+           .header-content { flex-direction: column; gap: 15px; }
+           .banner img { height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bismillah">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
+    <div class="subtitle">চলুন কেনাকাটা শুরু করা যাক</div>
+
+    <header>
+        <div class="header-content">
+            <div class="logo-section">
+                <img id="siteLogo" src="https://via.placeholder.com/50" alt="Logo">
+                <h1 id="siteName">BithiLikha Store</h1>
+          </div>
+    </header>
+
+    <div class="main-options">
+        <div class="option-card">
+            <h2>বই</h2>
+            <a href="https://bithilikha.lovable.app" class="btn-start">শুরু করুন</a>
+        </div>
+        <div class="option-card">
+            <h2>প্রোডাক্ট</h2>
+            <a href="https://bithilikha.bolt.host/" class="btn-start">শুরু করুন</a>
+        </div>
+    </div>
+
+    <div class="banner-section" id="bannerSection">
+        <div class="banner">
+            <img src="https://picsum.photos/1200/300?random=1" alt="Banner 1" class="banner-img">
+            <div class="banner-options">
+                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
+                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
+            </div>
+        </div>
+        <div class="banner">
+            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
+            <div class="banner-options">
+                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
+                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
+            </div>
+        </div>
+        <div class="banner">
+            <img src="https://picsum.photos/1200/300?random=3" alt="Banner 3" class="banner-img">
+            <div class="banner-options">
+                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
+                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
+            </div>
+        </div>
+        <div class="banner">
+            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
+            <div class="banner-options">
+                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
+                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
+             </div>
+         </div>
+         <div class="banner">
+            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
+            <div class="banner-options">
+                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
+                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
+            </div>
+        </div>
+             <div class="banner">
+            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
+            <div class="banner-options">
+                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
+                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
+            </div>
+        </div>
+             <div class="banner">
+            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
+            <div class="banner-options">
+                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
+                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
+            </div>
+        </div>
+             <div class="banner">
+            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
+            <div class="banner-options">
+                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
+                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 BithiLikha Store. সর্বস্বত্ব সংরক্ষিত।</p>
+        <a class="admin-link" onclick="openAdmin()">Admin</a>
+    </footer>
+
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <h3 id="adminTitle">অ্যাডমিন লগইন</h3>
+            <div id="loginForm">
+                <div class="form-group">
+                    <label>ইমেইল</label>
+                    <input type="email" id="adminEmail" placeholder="admin@example.com">
+                </div>
+                <div class="form-group">
+                    <label>পাসওয়ার্ড</label>
+                    <input type="password" id="adminPass" placeholder="••••••••">
+                </div>
+                <button class="btn" onclick="adminLogin()">লগইন</button>
+                <button class="btn-danger" onclick="closeAdmin()">বন্ধ করুন</button>
+            </div>
+            <div id="adminDashboard" style="display:none;">
+                <h4>Site Branding</h4>
+                <div class="form-group">
+                    <label>সাইটের নাম</label>
+                    <input type="text" id="editSiteName">
+                    <button class="btn" onclick="updateSiteName()">আপডেট করুন</button>
+                </div>
+                <div class="form-group">
+                    <label>লোগো আপলোড</label>
+                    <input type="file" id="logoFile" accept="image/*">
+                    <button class="btn" onclick="uploadLogo()">আপলোড করুন</button>
+                </div>
+                <hr style="margin: 20px 0;">
+                <h4>Banner Management</h4>
+                <div id="bannerList"></div>
+                <button class="btn-danger" onclick="adminLogout()">লগআউট</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'bn',
+                includedLanguages: 'bn,en,hi,ar,ur,es,fr',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <script>
+        // Load saved data
+        window.onload = function() {
+            if(localStorage.getItem('siteName')) {
+                document.getElementById('siteName').textContent = localStorage.getItem('siteName');
+                document.getElementById('editSiteName').value = localStorage.getItem('siteName');
+            }
+            if(localStorage.getItem('siteLogo')) {
+                document.getElementById('siteLogo').src = localStorage.getItem('siteLogo');
+            }
+
+            // Load banners
+            const banners = document.querySelectorAll('.banner-img');
+            banners.forEach((img, i) => {
+                const saved = localStorage.getItem('banner' + i);
+                if(saved) img.src = saved;
+            });
+        }
+
+        function toggleTranslate() {
+            const el = document.getElementById('google_translate_element');
+            el.style.display = el.style.display === 'none'? 'block' : 'none';
+        }
+
+        // Admin Functions
+        function openAdmin() {
+            document.getElementById('adminModal').classList.add('active');
+            if(localStorage.getItem('adminLoggedIn') === 'true') {
+                showDashboard();
+            }
+        }
+
+        function closeAdmin() {
+            document.getElementById('adminModal').classList.remove('active');
+        }
+
+        function adminLogin() {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPass').value;
+
+            let adminEmail = localStorage.getItem('adminEmail');
+            let adminPass = localStorage.getItem('adminPass');
+
+            if(!adminEmail) {
+                // First time signup
+                if(email && pass) {
+                    localStorage.setItem('adminEmail', email);
+                    localStorage.setItem('adminPass', pass);
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    showDashboard();
+                    alert('অ্যাডমিন একাউন্ট তৈরি হয়েছে!');
+                } else {
+                    alert('ইমেইল ও পাসওয়ার্ড দিন');
+                }
+            } else {
+                // Login
+                if(email === adminEmail && pass === adminPass) {
+                    localStorage.setItem('adminLoggedIn', 'true');
+                    showDashboard();
+                } else {
+                    alert('ভুল ইমেইল বা পাসওয়ার্ড');
+                }
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'block';
+            document.getElementById('adminTitle').textContent = 'অ্যাডমিন ড্যাশবোর্ড';
+            loadBannerList();
+        }
+
+        function adminLogout() {
+            localStorage.setItem('adminLoggedIn', 'false');
+            location.reload();
+        }
+
+        function updateSiteName() {
+            const name = document.getElementById('editSiteName').value;
+            localStorage.setItem('siteName', name);
+            document.getElementById('siteName').textContent = name;
+            alert('সাইটের নাম আপডেট হয়েছে!');
+        }
+
+        function uploadLogo() {
+            const file = document.getElementById('logoFile').files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem('siteLogo', e.target.result);
+                    document.getElementById('siteLogo').src = e.target.result;
+                    alert('লোগো আপলোড হয়েছে!');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                alert('ফাইল সিলেক্ট করুন');
+            }
+        }
+
+        function loadBannerList() {
+            const list = document.getElementById('bannerList');
+            list.innerHTML = '';
+            for(let i = 0; i < 8; i++){
+                const div = document.createElement('div');
+                div.className = 'form-group';
+                div.innerHTML = `
+                    <label>ব্যানার ${i+1}</label>
+                    <input type="file" id="bannerFile${i}" accept="image/*">
+                    <button class="btn" onclick="uploadBanner(${i})">আপলোড</button>
+                `;
+                list.appendChild(div);
+            }
+        }
+        
+
+        function uploadBanner(index) {
+            const file = document.getElementById('bannerFile' + index).files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem('banner' + index, e.target.result);
+                    document.querySelectorAll('.banner-img')[index].src = e.target.result;
+                    alert('ব্যানার ' + (index+1) + ' আপলোড হয়েছে!');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
