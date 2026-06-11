@@ -1,557 +1,242 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Booeb.com - কেনাকাটা শুরু করুন</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        body {
-            font-family: 'Hind Siliguri', sans-serif;
-            background: #f5f5f5;
-            color: #333;
-            top: 0!important;
-        }
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/assets/styles-DBI5Ae6p.css" data-precedence="default"/><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&amp;family=Fira+Sans:wght@300;400;500;600;700&amp;family=Hind+Siliguri:wght@400;500;600;700&amp;display=swap" data-precedence="default"/><title>Bithilikha.com — Premium books &amp; modern gadgets</title><meta name="description" content="Shop curated books and the latest electronic gadgets at Bithilikha.com. Premium quality, minimalist design, fast delivery."/><meta property="og:title" content="Bithilikha.com — Premium books &amp; modern gadgets"/><meta property="og:description" content="Shop curated books and the latest electronic gadgets at Bithilikha.com. Premium quality, minimalist design, fast delivery."/><meta name="twitter:title" content="Bithilikha.com — Premium books &amp; modern gadgets"/><meta name="twitter:description" content="Shop curated books and the latest electronic gadgets at Bithilikha.com. Premium quality, minimalist design, fast delivery."/><meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/32ffbe88-edd2-4467-809a-bdc77a90e7d8/id-preview-7def3c73--c3f8f90f-2ca6-4c7a-ba6f-a769a008d394.lovable.app-1779601705563.png"/><meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/32ffbe88-edd2-4467-809a-bdc77a90e7d8/id-preview-7def3c73--c3f8f90f-2ca6-4c7a-ba6f-a769a008d394.lovable.app-1779601705563.png"/><meta name="twitter:card" content="summary_large_image"/><meta property="og:type" content="website"/><link rel="modulepreload" href="/assets/index-Cq1Q5n3D.js"/><link rel="modulepreload" href="/assets/index-B4V3ae5J.js"/><link rel="modulepreload" href="/assets/Footer-nbTFl3SE.js"/><link rel="modulepreload" href="/assets/ProductCard-DPRWfM9C.js"/><link rel="modulepreload" href="/assets/createLucideIcon-C5JrUapj.js"/><link rel="modulepreload" href="/assets/wishlistStore-Si6Kd9Hf.js"/><link rel="modulepreload" href="/assets/truck-NKcjLjv_.js"/><link rel="modulepreload" href="/assets/rotate-ccw-CuQorV_X.js"/><link rel="modulepreload" href="/assets/arrow-right-DeR2xW3R.js"/><link rel="modulepreload" href="/assets/button-Duw_jci8.js"/><link rel="modulepreload" href="/assets/shopping-bag-Dbmw10XU.js"/><link rel="modulepreload" href="/assets/input-C-URVyMo.js"/><link rel="modulepreload" href="/assets/loader-circle-C6asv-GC.js"/><link rel="modulepreload" href="/assets/heart-C-HxvXnT.js"/><link rel="modulepreload" href="/assets/package-B0T5r6rg.js"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous"/>
+<style>
+	@font-face {
+		font-family: 'CameraPlainVariable';
+		src: url('https://cdn.gpteng.co/mcp-widgets/v1/fonts/CameraPlainVariable.woff2') format('woff2');
+		font-weight: 100 900;
+		font-style: normal;
+		font-display: swap;
+	}
 
-       .goog-te-banner-frame,.goog-logo-link,.goog-te-gadget {
-            display: none!important;
-        }
+	#lovable-badge {
+		--badge-bg: #1b1b1b;
+		--badge-text: #c5c1b9;
+		--badge-text-hover: #dcdad5;
+		--badge-radius: 6px;
+		--badge-padding: 8px;
+		--badge-gap: 6px;
+		--badge-shadow: 
+			0 0 0 1px rgba(0, 0, 0, 0.88),
+			0 1px 0 0 rgba(0, 0, 0, 0.04),
+			0 2px 2px -1px rgba(0, 0, 0, 0.08),
+			0 4px 4px -2px rgba(0, 0, 0, 0.08),
+			0 8px 8px -4px rgba(0, 0, 0, 0.08),
+			0 16px 16px -8px rgba(0, 0, 0, 0.08);
+		--badge-transition-duration: 0.2s;
+		--badge-transition-easing: cubic-bezier(0.16, 1, 0.32, 1);
+		--focus-color: #575ECF;
+		--focus-offset: 2px;
+		--focus-width: 2px;
+		
+		position: fixed;
+		bottom: 12px;
+		right: 12px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		z-index: 1000000;
+		background-color: var(--badge-bg) !important;
+		color: var(--badge-text) !important;
+		border-radius: var(--badge-radius);
+		box-shadow: var(--badge-shadow) !important;
+		font-size: 12px;
+		font-family: CameraPlainVariable, "CameraPlainVariable Fallback", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+		font-weight: 400 !important;
+		text-transform: none !important;
+		font-feature-settings: normal !important;
+		transform: translateZ(0);
+		will-change: transform, opacity;
+	}
 
-       .bismillah {
-            font-family: 'Amiri', serif;
-            text-align: center;
-            font-size: 32px;
-            font-weight: 700;
-            padding: 20px 10px 10px;
-            background: linear-gradient(135deg, #d4af37, #f2d377);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+	#lovable-badge-cta {
+		display: flex;
+		align-items: center;
+		gap: var(--badge-gap);
+		padding: 0 var(--badge-padding);
+		height: 100%;
+		color: inherit;
+		text-decoration: none;
+		white-space: nowrap;
+		border-radius: var(--badge-radius) 0 0 var(--badge-radius);
+		transition: 
+			background-color var(--badge-transition-duration) ease,
+			color var(--badge-transition-duration) ease,
+			transform 0.1s ease;
+	}
 
-       .subtitle {
-            text-align: center;
-            font-size: 18px;
-            color: #666;
-            margin-bottom: 20px;
-        }
+	#lovable-badge-cta:hover {
+		background: rgba(255, 255, 255, 0.04);
+		color: var(--badge-text-hover);
+	}
 
-        header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+	#lovable-badge-cta:active {
+		transform: scale(0.98);
+	}
 
-       .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+	#lovable-badge-cta:focus {
+		outline: none;
+	}
 
-       .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
+	#lovable-badge-cta:focus-visible {
+		outline: var(--focus-width) solid var(--focus-color);
+		outline-offset: var(--focus-offset);
+		z-index: 1;
+	}
 
-       .logo-section img {
-            width: 50px;
-            height: 50px;
-            border-radius: 8px;
-            object-fit: cover;
-        }
+	#lovable-badge-text {
+		line-height: 1;
+	}
 
-       .logo-section h1 {
-            font-size: 24px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
+	#lovable-badge-divider {
+		width: 1px;
+		height: 24px;
+		background-color: rgba(255, 255, 255, 0.04);
+		flex-shrink: 0;
+	}
 
-       .language-selector {
-            position: relative;
-        }
+	#lovable-badge-close {
+		width: 24px;
+		height: 24px;
+		min-width: 24px;
+		min-height: 24px;
+		cursor: pointer;
+		background: none;
+		border: none;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 0 var(--badge-radius) var(--badge-radius) 0;
+		flex-shrink: 0;
+		transition: 
+			background-color var(--badge-transition-duration) ease,
+			transform 0.1s ease;
+	}
 
-       .lang-btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 15px;
-            font-family: 'Hind Siliguri', sans-serif;
-            transition: 0.3s;
-        }
+	#lovable-badge-close:hover {
+		background: rgba(255, 255, 255, 0.04);
+	}
 
-       .lang-btn:hover {
-            background: #2980b9;
-        }
+	#lovable-badge-close:active {
+		transform: scale(0.92);
+	}
 
-        #google_translate_element {
-            position: absolute;
-            top: 45px;
-            right: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            padding: 10px;
-            display: none;
-        }
+	#lovable-badge-close:focus {
+		outline: none;
+	}
 
-       .main-options {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-        }
+	#lovable-badge-close:focus-visible {
+		outline: var(--focus-width) solid var(--focus-color);
+		outline-offset: calc(var(--focus-offset) * -1);
+		z-index: 1;
+	}
 
-       .option-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            text-align: center;
-            transition: 0.3s;
-        }
+	#lovable-badge-close svg path {
+		fill: var(--badge-text);
+		transition: fill var(--badge-transition-duration) ease;
+	}
 
-       .option-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-        }
+	#lovable-badge-close:hover svg path {
+		fill: var(--badge-text-hover);
+	}
 
-       .option-card h2 {
-            font-size: 28px;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
+	@media (prefers-reduced-motion: reduce) {
+		#lovable-badge-cta,
+		#lovable-badge-close,
+		#lovable-badge-close svg path {
+			transition: none;
+		}
+		
+		#lovable-badge-cta:active,
+		#lovable-badge-close:active {
+			transform: none;
+		}
+	}
 
-       .btn-start {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 35px;
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Hind Siliguri', sans-serif;
-            transition: 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
+	@media (prefers-contrast: high) {
+		#lovable-badge {
+			--badge-bg: #000;
+			--badge-text: #fff;
+			--badge-text-hover: #fff;
+			border: 2px solid currentColor;
+		}
+		
+		#lovable-badge-cta:focus-visible,
+		#lovable-badge-close:focus-visible {
+			outline-width: 3px;
+		}
+	}
+</style>
+</head><body><!--$--><div class="min-h-screen flex flex-col bg-secondary/40"><header class="sticky top-0 z-40 bg-background border-b border-border"><div class="hidden md:block bg-secondary/70 text-xs text-muted-foreground"><div class="container mx-auto px-4 sm:px-6 h-9 flex items-center justify-between"><div class="flex items-center gap-5"><span class="inline-flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin h-3.5 w-3.5 text-primary" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg> <!-- -->Deliver to<!-- --> <strong class="text-foreground font-medium">Dhaka, Bangladesh</strong></span></div><div class="hidden lg:flex items-center gap-1.5"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck h-3.5 w-3.5 text-primary" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18H9"></path><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path><circle cx="17" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg><span>Free delivery on orders over <strong class="text-foreground font-medium">৳1,000</strong></span></div><div class="flex items-center gap-3"><button type="button" id="radix-_R_3i5aq_" aria-haspopup="menu" aria-expanded="false" data-state="closed" class="inline-flex items-center gap-1 hover:text-primary outline-none"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe h-3.5 w-3.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg> <!-- -->EN<!-- --> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down h-3 w-3" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><button type="button" id="radix-_R_5i5aq_" aria-haspopup="menu" aria-expanded="false" data-state="closed" class="inline-flex items-center gap-1 hover:text-primary outline-none">BDT<!-- --> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down h-3 w-3" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><a href="mailto:bithilikha@gmail.com" class="inline-flex items-center gap-1.5 hover:text-primary"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-question-mark h-3.5 w-3.5" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg> <!-- -->Help &amp; Support</a></div></div></div><div class="container mx-auto px-4 sm:px-6 h-16 lg:h-20 flex items-center gap-4"><a class="flex items-baseline gap-1 shrink-0 active" href="/" data-status="active" aria-current="page"><span class="font-display font-bold text-2xl lg:text-3xl text-primary tracking-tight">Bithilikha</span><span class="font-display text-2xl lg:text-3xl text-primary/70">.com</span></a><div class="relative hidden md:block flex-1 max-w-2xl mx-2 lg:mx-6"><div class="relative"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg><input class="flex h-9 w-full border px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-9 pr-9 rounded-full bg-secondary/60 border-transparent focus-visible:border-border" placeholder="Search products…" maxLength="120" aria-autocomplete="list" aria-expanded="false" value=""/></div></div><div class="flex items-center gap-1 sm:gap-3 shrink-0 ml-auto"><a href="/shop" class="hidden lg:flex flex-col items-center text-[11px] text-muted-foreground hover:text-primary px-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-git-compare h-5 w-5" aria-hidden="true"><circle cx="18" cy="18" r="3"></circle><circle cx="6" cy="6" r="3"></circle><path d="M13 6h3a2 2 0 0 1 2 2v7"></path><path d="M11 18H8a2 2 0 0 1-2-2V9"></path></svg><span class="mt-0.5">Compare</span></a><a href="/login" class="relative hidden lg:flex flex-col items-center text-[11px] text-muted-foreground hover:text-primary px-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart h-5 w-5" aria-hidden="true"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg><span class="mt-0.5">Wishlist</span></a><button class="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&amp;_svg]:pointer-events-none [&amp;_svg]:size-4 [&amp;_svg]:shrink-0 border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground h-9 w-9 relative rounded-full" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="radix-_R_7k5aq_" data-state="closed"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shopping-bag h-5 w-5" aria-hidden="true"><path d="M16 10a4 4 0 0 1-8 0"></path><path d="M3.103 6.034h17.794"></path><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"></path></svg></button><a href="/login" class="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-secondary"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user h-5 w-5 text-primary" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span class="hidden lg:flex flex-col leading-tight"><span class="text-[10px] text-muted-foreground">Sign In</span><span class="text-xs font-medium">My Account</span></span></a></div></div><div class="border-t border-border bg-background"><div class="container mx-auto px-4 sm:px-6 h-12 flex items-center gap-4"><button class="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 h-9 rounded-md text-sm font-medium shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu h-4 w-4" aria-hidden="true"><path d="M4 5h16"></path><path d="M4 12h16"></path><path d="M4 19h16"></path></svg> <!-- -->All Categories</button><nav class="hidden md:flex items-center gap-1 overflow-x-auto no-scrollbar flex-1"><a class="relative px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary whitespace-nowrap text-primary" href="/" data-status="active" aria-current="page">Home</a><a href="/shop" class="relative px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary whitespace-nowrap">Flash Deals<span class="ml-1 inline-flex items-center gap-0.5 align-top text-[9px] uppercase font-semibold bg-[var(--brand-ember)] text-white px-1.5 py-0.5 rounded"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flame h-2.5 w-2.5" aria-hidden="true"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"></path></svg>Hot</span></a><a href="/shop" class="relative px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary whitespace-nowrap">New Arrivals</a><a href="/shop" class="relative px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary whitespace-nowrap">Best Sellers</a><a href="/shop?cat=books" class="relative px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary whitespace-nowrap">Books</a><a href="/shop?cat=gadgets" class="relative px-3 py-2 text-sm font-medium text-foreground/80 hover:text-primary whitespace-nowrap">Gadgets</a></nav><a href="/admin" class="hidden lg:inline-flex items-center gap-2 ml-auto bg-primary text-primary-foreground px-4 h-9 rounded-md text-sm font-medium hover:bg-[var(--brand-green-dark)]">Sell on Bithilikha</a></div></div><div class="md:hidden border-t border-border bg-background"><div class="container mx-auto px-4 py-2.5"><div class="relative "><div class="relative"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg><input class="flex h-9 w-full border px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-9 pr-9 rounded-full bg-secondary/60 border-transparent focus-visible:border-border" placeholder="Search products…" maxLength="120" aria-autocomplete="list" aria-expanded="false" value=""/></div></div></div></div></header><section class="container mx-auto px-4 sm:px-6 mt-4 flex gap-4"><aside class="hidden lg:block w-60 shrink-0 rounded-xl border border-border bg-card overflow-hidden"><ul class="py-1.5"><li><a href="/shop?cat=electronics" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smartphone h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg><span class="flex-1 truncate">Electronics</span></a></li><li><a href="/shop?cat=books" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg><span class="flex-1 truncate">Books</span></a></li><li><a href="/shop?cat=fashion" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shirt h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg><span class="flex-1 truncate">Fashion &amp; Accessories</span></a></li><li><a href="/shop?cat=home" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg><span class="flex-1 truncate">Home &amp; Living</span></a></li><li><a href="/shop?cat=beauty" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg><span class="flex-1 truncate">Beauty &amp; Personal Care</span></a></li><li><a href="/shop?cat=sports" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dumbbell h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg><span class="flex-1 truncate">Sports &amp; Outdoors</span></a></li><li><a href="/shop?cat=baby" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-baby h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"></path><path d="M15 12h.01"></path><path d="M19.38 6.813A9 9 0 0 1 20.8 10.2a2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"></path><path d="M9 12h.01"></path></svg><span class="flex-1 truncate">Baby &amp; Toys</span></a></li><li><a href="/shop?cat=groceries" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-apple h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M12 6.528V3a1 1 0 0 1 1-1h0"></path><path d="M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21"></path></svg><span class="flex-1 truncate">Groceries &amp; Pets</span></a></li><li><a href="/shop?cat=health" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart-pulse h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path><path d="M3.22 13H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"></path></svg><span class="flex-1 truncate">Health &amp; Wellness</span></a></li><li><a href="/shop?cat=automotive" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-car h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg><span class="flex-1 truncate">Automotive</span></a></li><li><a href="/shop?cat=digital" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg><span class="flex-1 truncate">Digital Products</span></a></li><li><a href="/shop?cat=services" class="group flex items-center gap-2.5 px-4 py-2.5 text-sm text-foreground/80 hover:bg-brand-green-soft hover:text-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-briefcase h-4 w-4 text-muted-foreground group-hover:text-primary" aria-hidden="true"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path><rect width="20" height="14" x="2" y="6" rx="2"></rect></svg><span class="flex-1 truncate">Services &amp; Booking</span></a></li></ul><a href="/shop" class="flex items-center justify-between px-4 py-3 border-t border-border text-sm font-medium text-primary hover:bg-brand-green-soft">View All Categories <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right h-4 w-4" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></a></aside><div class="flex-1 min-w-0"><div class="rounded-xl overflow-hidden border border-border bg-card"><div class="relative h-[260px] sm:h-[320px] lg:h-[380px] bg-brand-green-soft flex items-center px-8 sm:px-12"><div class="max-w-md"><p class="text-xs text-primary uppercase tracking-wider font-semibold">Welcome to Bithilikha.com</p><h1 class="text-3xl sm:text-5xl font-bold text-foreground mt-3 leading-tight">Shop Smart.<br/><span class="text-primary">Save More.</span><br/>Live Better.</h1><p class="text-sm text-muted-foreground mt-3 max-w-sm">Discover thousands of products from trusted sellers with the best prices and fast delivery.</p><div class="flex gap-3 mt-5"><a href="/shop" class="inline-flex items-center gap-1.5 bg-primary text-primary-foreground px-5 py-2.5 rounded-md text-sm font-medium hover:bg-[var(--brand-green-dark)]">Shop Now <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right h-4 w-4" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a><a href="/shop" class="inline-flex items-center gap-1.5 bg-white text-foreground border border-border px-5 py-2.5 rounded-md text-sm font-medium hover:border-primary">Explore Deals</a></div></div></div><div class="grid grid-cols-2 md:grid-cols-4 border-t border-border bg-brand-green-soft/40"><div class="flex items-center gap-2 px-4 py-3"><span class="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet h-4 w-4" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg></span><div class="leading-tight min-w-0"><p class="text-[12px] font-semibold text-foreground truncate">Best Prices</p><p class="text-[10px] text-muted-foreground truncate">Guaranteed</p></div></div><div class="flex items-center gap-2 px-4 py-3"><span class="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck h-4 w-4" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18H9"></path><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path><circle cx="17" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg></span><div class="leading-tight min-w-0"><p class="text-[12px] font-semibold text-foreground truncate">Fast Delivery</p><p class="text-[10px] text-muted-foreground truncate">Across Bangladesh</p></div></div><div class="flex items-center gap-2 px-4 py-3"><span class="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check h-4 w-4" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg></span><div class="leading-tight min-w-0"><p class="text-[12px] font-semibold text-foreground truncate">Secure Payments</p><p class="text-[10px] text-muted-foreground truncate">100% Protected</p></div></div><div class="flex items-center gap-2 px-4 py-3"><span class="h-8 w-8 rounded-full bg-white text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw h-4 w-4" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></span><div class="leading-tight min-w-0"><p class="text-[12px] font-semibold text-foreground truncate">Easy Returns</p><p class="text-[10px] text-muted-foreground truncate">7 Days Return</p></div></div></div></div></div><aside class="hidden lg:flex flex-col gap-4 w-72 shrink-0"><div class="rounded-xl border border-border bg-card p-5"><p class="text-sm font-semibold text-foreground">Welcome Back!</p><p class="text-xs text-muted-foreground mt-0.5">Sign in to your account</p><div class="mt-3 space-y-2"><a href="/login" class="block text-center bg-primary text-primary-foreground rounded-md py-2 text-sm font-medium hover:bg-[var(--brand-green-dark)]">Sign In</a><a href="/signup" class="block text-center border border-primary text-primary rounded-md py-2 text-sm font-medium hover:bg-brand-green-soft">Create Account</a></div></div></aside></section><section class="container mx-auto px-4 sm:px-6 mt-6"><div class="rounded-xl border border-border bg-card px-3 py-4 sm:px-6 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3"><div class="flex items-center gap-2.5 min-w-0"><span class="h-9 w-9 rounded-full bg-brand-green-soft text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-network h-4.5 w-4.5" aria-hidden="true"><rect x="16" y="16" width="6" height="6" rx="1"></rect><rect x="2" y="16" width="6" height="6" rx="1"></rect><rect x="9" y="2" width="6" height="6" rx="1"></rect><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"></path><path d="M12 12V8"></path></svg></span><div class="min-w-0 leading-tight"><p class="text-[12px] font-semibold text-foreground truncate">Multi-Vendor</p><p class="text-[10px] text-muted-foreground truncate">Marketplace</p></div></div><div class="flex items-center gap-2.5 min-w-0"><span class="h-9 w-9 rounded-full bg-brand-green-soft text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check h-4.5 w-4.5" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg></span><div class="min-w-0 leading-tight"><p class="text-[12px] font-semibold text-foreground truncate">Secure</p><p class="text-[10px] text-muted-foreground truncate">Payments</p></div></div><div class="flex items-center gap-2.5 min-w-0"><span class="h-9 w-9 rounded-full bg-brand-green-soft text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck h-4.5 w-4.5" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18H9"></path><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path><circle cx="17" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg></span><div class="min-w-0 leading-tight"><p class="text-[12px] font-semibold text-foreground truncate">Fast Delivery</p><p class="text-[10px] text-muted-foreground truncate">&amp; Tracking</p></div></div><div class="flex items-center gap-2.5 min-w-0"><span class="h-9 w-9 rounded-full bg-brand-green-soft text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-rotate-ccw h-4.5 w-4.5" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg></span><div class="min-w-0 leading-tight"><p class="text-[12px] font-semibold text-foreground truncate">Easy Returns</p><p class="text-[10px] text-muted-foreground truncate">Policy</p></div></div><div class="flex items-center gap-2.5 min-w-0"><span class="h-9 w-9 rounded-full bg-brand-green-soft text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-headphones h-4.5 w-4.5" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"></path></svg></span><div class="min-w-0 leading-tight"><p class="text-[12px] font-semibold text-foreground truncate">24/7 Customer</p><p class="text-[10px] text-muted-foreground truncate">Support</p></div></div><div class="flex items-center gap-2.5 min-w-0"><span class="h-9 w-9 rounded-full bg-brand-green-soft text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-badge-dollar-sign h-4.5 w-4.5" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg></span><div class="min-w-0 leading-tight"><p class="text-[12px] font-semibold text-foreground truncate">Best Price</p><p class="text-[10px] text-muted-foreground truncate">Guarantee</p></div></div><div class="flex items-center gap-2.5 min-w-0"><span class="h-9 w-9 rounded-full bg-brand-green-soft text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-gift h-4.5 w-4.5" aria-hidden="true"><path d="M12 7v14"></path><path d="M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8"></path><path d="M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5"></path><rect x="3" y="7" width="18" height="4" rx="1"></rect></svg></span><div class="min-w-0 leading-tight"><p class="text-[12px] font-semibold text-foreground truncate">Earn Points</p><p class="text-[10px] text-muted-foreground truncate">On Every Order</p></div></div><div class="flex items-center gap-2.5 min-w-0"><span class="h-9 w-9 rounded-full bg-brand-green-soft text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles h-4.5 w-4.5" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg></span><div class="min-w-0 leading-tight"><p class="text-[12px] font-semibold text-foreground truncate">Exclusive</p><p class="text-[10px] text-muted-foreground truncate">Offers Daily</p></div></div></div></section><section class="container mx-auto px-4 sm:px-6 mt-8"><div class="rounded-xl border border-border bg-card p-5"><div class="flex items-center justify-between mb-4"><h2 class="text-lg font-semibold text-foreground">Shop by Category</h2><a href="/shop" class="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1">View All Categories <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right h-3.5 w-3.5" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a></div><div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3"><a href="/shop?cat=electronics" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smartphone h-7 w-7" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Electronics</span></a><a href="/shop?cat=fashion" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shirt h-7 w-7" aria-hidden="true"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Fashion</span></a><a href="/shop?cat=home" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-house h-7 w-7" aria-hidden="true"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"></path><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Home &amp; Living</span></a><a href="/shop?cat=beauty" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles h-7 w-7" aria-hidden="true"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Beauty</span></a><a href="/shop?cat=sports" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dumbbell h-7 w-7" aria-hidden="true"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"></path><path d="m2.5 21.5 1.4-1.4"></path><path d="m20.1 3.9 1.4-1.4"></path><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"></path><path d="m9.6 14.4 4.8-4.8"></path></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Sports</span></a><a href="/shop?cat=books" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-open h-7 w-7" aria-hidden="true"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Books</span></a><a href="/shop?cat=groceries" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-lime-50 text-lime-700 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-apple h-7 w-7" aria-hidden="true"><path d="M12 6.528V3a1 1 0 0 1 1-1h0"></path><path d="M18.237 21A15 15 0 0 0 22 11a6 6 0 0 0-10-4.472A6 6 0 0 0 2 11a15.1 15.1 0 0 0 3.763 10 3 3 0 0 0 3.648.648 5.5 5.5 0 0 1 5.178 0A3 3 0 0 0 18.237 21"></path></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Groceries</span></a><a href="/shop?cat=baby" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-baby h-7 w-7" aria-hidden="true"><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"></path><path d="M15 12h.01"></path><path d="M19.38 6.813A9 9 0 0 1 20.8 10.2a2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"></path><path d="M9 12h.01"></path></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Baby &amp; Toys</span></a><a href="/shop?cat=automotive" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-zinc-100 text-zinc-700 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-car h-7 w-7" aria-hidden="true"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Automotive</span></a><a href="/shop?cat=digital" class="group flex flex-col items-center gap-2"><span class="h-16 w-16 rounded-full bg-violet-50 text-violet-700 flex items-center justify-center border border-border group-hover:border-primary transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download h-7 w-7" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg></span><span class="text-[11px] sm:text-xs text-foreground text-center truncate w-full">Digital</span></a></div></div></section><section class="container mx-auto px-4 sm:px-6 mt-6 grid grid-cols-1 md:grid-cols-3 gap-4"><a href="/shop?cat=fashion" class="bg-primary text-primary-foreground rounded-xl p-6 min-h-[160px] flex flex-col justify-between hover:opacity-95 transition"><div><p class="text-xs opacity-80">Summer Collection</p><h3 class="text-2xl font-bold mt-1">Fashion Sale</h3><p class="text-sm opacity-90 mt-1">Up to 60% OFF</p></div><span class="bg-white text-primary inline-flex w-fit px-4 py-2 rounded text-sm font-medium">Shop Now</span></a><a href="/shop?cat=gadgets" class="bg-brand-green-soft text-primary rounded-xl p-6 min-h-[160px] flex flex-col justify-between hover:opacity-95 transition"><div><p class="text-xs opacity-80">New Arrivals</p><h3 class="text-2xl font-bold mt-1">Smart Gadgets</h3><p class="text-sm opacity-90 mt-1">Up to 40% OFF</p></div><span class="bg-white text-primary border border-primary/20 inline-flex w-fit px-4 py-2 rounded text-sm font-medium">Explore Now</span></a><a href="/shop?cat=groceries" class="bg-amber-50 text-amber-900 rounded-xl p-6 min-h-[160px] flex flex-col justify-between hover:opacity-95 transition"><div><p class="text-xs opacity-80">Daily Essentials</p><h3 class="text-2xl font-bold mt-1">Groceries &amp; More</h3><p class="text-sm opacity-90 mt-1">Up to 30% OFF</p></div><span class="bg-white text-amber-800 border border-amber-200 inline-flex w-fit px-4 py-2 rounded text-sm font-medium">Shop Now</span></a></section><section class="container mx-auto px-4 sm:px-6 mt-8"><div class="rounded-xl border border-border bg-card p-5"><div class="flex items-center justify-between mb-4"><h2 class="text-lg font-semibold text-foreground">Best Selling Products</h2><a href="/shop" class="text-xs font-medium text-primary hover:underline inline-flex items-center gap-1">View All Products <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right h-3.5 w-3.5" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a></div><div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-4 border-b border-border"><button class="px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition bg-primary text-primary-foreground">All</button><button class="px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition bg-secondary text-foreground hover:bg-brand-green-soft hover:text-primary">Electronics</button><button class="px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition bg-secondary text-foreground hover:bg-brand-green-soft hover:text-primary">Fashion</button><button class="px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition bg-secondary text-foreground hover:bg-brand-green-soft hover:text-primary">Books</button><button class="px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition bg-secondary text-foreground hover:bg-brand-green-soft hover:text-primary">Home &amp; Living</button><button class="px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition bg-secondary text-foreground hover:bg-brand-green-soft hover:text-primary">Gadgets</button></div><div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"><div class="space-y-3"><div class="aspect-square rounded-lg bg-muted animate-pulse"></div><div class="h-3 w-3/4 bg-muted rounded animate-pulse"></div><div class="h-3 w-1/3 bg-muted rounded animate-pulse"></div></div><div class="space-y-3"><div class="aspect-square rounded-lg bg-muted animate-pulse"></div><div class="h-3 w-3/4 bg-muted rounded animate-pulse"></div><div class="h-3 w-1/3 bg-muted rounded animate-pulse"></div></div><div class="space-y-3"><div class="aspect-square rounded-lg bg-muted animate-pulse"></div><div class="h-3 w-3/4 bg-muted rounded animate-pulse"></div><div class="h-3 w-1/3 bg-muted rounded animate-pulse"></div></div><div class="space-y-3"><div class="aspect-square rounded-lg bg-muted animate-pulse"></div><div class="h-3 w-3/4 bg-muted rounded animate-pulse"></div><div class="h-3 w-1/3 bg-muted rounded animate-pulse"></div></div><div class="space-y-3"><div class="aspect-square rounded-lg bg-muted animate-pulse"></div><div class="h-3 w-3/4 bg-muted rounded animate-pulse"></div><div class="h-3 w-1/3 bg-muted rounded animate-pulse"></div></div><div class="space-y-3"><div class="aspect-square rounded-lg bg-muted animate-pulse"></div><div class="h-3 w-3/4 bg-muted rounded animate-pulse"></div><div class="h-3 w-1/3 bg-muted rounded animate-pulse"></div></div></div></div></section><section class="container mx-auto px-4 sm:px-6 mt-8 mb-12"><div class="rounded-xl bg-brand-green-soft px-5 py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"><div class="flex items-center gap-3"><span class="h-10 w-10 rounded-full bg-white text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield-check h-5 w-5" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg></span><div class="leading-tight"><p class="text-sm font-semibold text-foreground">100% Secure Payments</p><p class="text-xs text-muted-foreground">Your payments are safe with us</p></div></div><div class="flex items-center gap-3"><span class="h-10 w-10 rounded-full bg-white text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet h-5 w-5" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg></span><div class="leading-tight"><p class="text-sm font-semibold text-foreground">Money Back Guarantee</p><p class="text-xs text-muted-foreground">7 days money back guarantee</p></div></div><div class="flex items-center gap-3"><span class="h-10 w-10 rounded-full bg-white text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-headphones h-5 w-5" aria-hidden="true"><path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3"></path></svg></span><div class="leading-tight"><p class="text-sm font-semibold text-foreground">24/7 Customer Support</p><p class="text-xs text-muted-foreground">We are here to help you</p></div></div><div class="flex items-center gap-3"><span class="h-10 w-10 rounded-full bg-white text-primary flex items-center justify-center shrink-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-truck h-5 w-5" aria-hidden="true"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M15 18H9"></path><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"></path><circle cx="17" cy="18" r="2"></circle><circle cx="7" cy="18" r="2"></circle></svg></span><div class="leading-tight"><p class="text-sm font-semibold text-foreground">Fast &amp; Reliable Delivery</p><p class="text-xs text-muted-foreground">Fast delivery on all orders</p></div></div></div></section><footer class="mt-8 border-t border-border bg-card text-foreground"><div class="container mx-auto px-6 py-12 grid gap-10 md:grid-cols-4"><div class="space-y-3"><a class="flex items-baseline gap-1 active" href="/" data-status="active" aria-current="page"><span class="font-display font-bold text-2xl text-primary">Bithilikha</span><span class="font-display text-2xl text-primary/70">.com</span></a><p class="text-sm text-muted-foreground max-w-xs">Your ultimate destination for online shopping in Bangladesh. Shop Smart, Save More, Live Better.</p><ul class="space-y-1.5 text-sm text-muted-foreground pt-2"><li class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail h-4 w-4 text-primary" aria-hidden="true"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg><a href="mailto:bithilikha@gmail.com" class="hover:text-primary">bithilikha@gmail.com</a></li><li class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone h-4 w-4 text-primary" aria-hidden="true"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg><a href="tel:+8801870108221" class="hover:text-primary">+880 1870-108221</a></li><li class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-map-pin h-4 w-4 text-primary" aria-hidden="true"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path><circle cx="12" cy="10" r="3"></circle></svg><span>Chittagong, Bangladesh</span></li></ul></div><div><h4 class="text-sm font-semibold mb-3 text-foreground">Subscribe to our newsletter</h4><p class="text-xs text-muted-foreground mb-3">Get the latest updates, offers and more.</p><form class="flex gap-0"><input class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm rounded-r-none border-r-0" placeholder="Enter your email"/><button type="submit" class="px-4 bg-primary text-primary-foreground rounded-r-md text-sm font-medium hover:bg-[var(--brand-green-dark)]">Subscribe</button></form><h4 class="text-sm font-semibold mt-6 mb-3 text-foreground">Shop</h4><ul class="space-y-1.5 text-sm text-muted-foreground"><li><a href="/shop" class="hover:text-primary">All products</a></li><li><a href="/shop?cat=books" class="hover:text-primary">Books</a></li><li><a href="/shop?cat=gadgets" class="hover:text-primary">Gadgets</a></li></ul></div><div><h4 class="text-sm font-semibold mb-3 text-foreground">Download Our App</h4><p class="text-xs text-muted-foreground mb-3">Shop on the go with our mobile app.</p><div class="flex flex-col gap-2"><a href="#" class="inline-flex items-center gap-2 bg-foreground text-background px-3 py-2 rounded-md w-fit"><span class="text-2xl leading-none">▶</span><span class="leading-tight"><span class="block text-[9px] opacity-80">GET IT ON</span><span class="block text-xs font-semibold">Google Play</span></span></a><a href="#" class="inline-flex items-center gap-2 bg-foreground text-background px-3 py-2 rounded-md w-fit"><span class="text-2xl leading-none"></span><span class="leading-tight"><span class="block text-[9px] opacity-80">Download on the</span><span class="block text-xs font-semibold">App Store</span></span></a></div></div><div><h4 class="text-sm font-semibold mb-3 text-foreground">Follow Us</h4><p class="text-xs text-muted-foreground mb-3">Stay connected with us on social media.</p><div class="flex flex-wrap gap-2"><a href="https://www.fb.com/@BithilikhaAll" target="_blank" rel="noopener noreferrer" aria-label="Facebook" class="p-2 rounded-full bg-primary text-primary-foreground hover:bg-[var(--brand-green-dark)]"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-facebook h-4 w-4" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg></a><a href="https://www.instagram.com/bithilikha.com.official" target="_blank" rel="noopener noreferrer" aria-label="Instagram" class="p-2 rounded-full bg-pink-500 text-white hover:opacity-90"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-instagram h-4 w-4" aria-hidden="true"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line></svg></a><a href="https://x.com/bithilikha" target="_blank" rel="noopener noreferrer" aria-label="X" class="p-2 rounded-full bg-foreground text-background hover:opacity-90"><svg viewBox="1 1 22 22" fill="currentColor" class="h-4 w-4" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L3.446 21.75H.05l7.73-8.835L.028 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg></a><a href="https://youtube.com/@bithilikha_com" target="_blank" rel="noopener noreferrer" aria-label="YouTube" class="p-2 rounded-full bg-red-600 text-white hover:opacity-90"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-youtube h-4 w-4" aria-hidden="true"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"></path><path d="m10 15 5-3-5-3z"></path></svg></a><a href="https://www.tiktok.com/@bithilikha.com" target="_blank" rel="noopener noreferrer" aria-label="TikTok" class="p-2 rounded-full bg-foreground text-background hover:opacity-90"><svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.53V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.88-2.89 2.89 2.89 0 0 1 2.88-2.88c.26 0 .5.04.73.1V9.5a6.14 6.14 0 0 0-.73-.04 6.24 6.24 0 0 1 0 12.47 6.24 6.24 0 0 1 0-12.47V8.9a8.46 8.46 0 0 0 4.93-1.66v-3.55z"></path></svg></a></div></div></div><div class="border-t border-border"><div class="container mx-auto px-6 py-4 text-xs text-muted-foreground flex flex-wrap justify-between gap-2"><span>© 2026 Bithilikha.com — All rights reserved.</span><span>Crafted with care in Bangladesh.</span></div></div></footer></div><script>(function(t){let s;try{s=JSON.parse(sessionStorage.getItem(t.storageKey)||"{}")}catch(e){console.error(e);return}const c=t.key||window.history.state?.__TSR_key,r=c?s[c]:void 0;if(t.shouldScrollRestoration&&r&&typeof r=="object"&&Object.keys(r).length>0){for(const e in r){const o=r[e];if(!o||typeof o!="object")continue;const l=o.scrollX,i=o.scrollY;if(!(!Number.isFinite(l)||!Number.isFinite(i))){if(e==="window")window.scrollTo({top:i,left:l,behavior:t.behavior});else if(e){let n;try{n=document.querySelector(e)}catch{continue}n&&(n.scrollLeft=l,n.scrollTop=i)}}}return}const a=window.location.hash.split("#",2)[1];if(a){const e=window.history.state?.__hashScrollIntoViewOptions??!0;if(e){const o=document.getElementById(a);o&&o.scrollIntoView(e)}return}window.scrollTo({top:0,left:0,behavior:t.behavior})})({"storageKey":"tsr-scroll-restoration-v1_3","shouldScrollRestoration":true});document.currentScript.remove()</script><!--/$--><section aria-label="Notifications alt+T" tabindex="-1" aria-live="polite" aria-relevant="additions text" aria-atomic="false"></section><script class="$tsr" id="$tsr-stream-barrier">(self.$R=self.$R||{})["tsr"]=[];self.$_TSR={h(){this.hydrated=!0,this.c()},e(){this.streamEnded=!0,this.c()},c(){this.hydrated&&this.streamEnded&&(delete self.$_TSR,delete self.$R.tsr)},p(e){this.initialized?e():this.buffer.push(e)},buffer:[]};$_TSR.router=($R=>$R[0]={manifest:$R[1]={routes:$R[2]={__root__:$R[3]={preloads:$R[4]=["/assets/index-Cq1Q5n3D.js"],assets:$R[5]=[$R[6]={tag:"script",attrs:$R[7]={type:"module",async:!0},children:"import(\"/assets/index-Cq1Q5n3D.js\")"}]},"/":$R[8]={preloads:$R[9]=["/assets/index-B4V3ae5J.js","/assets/Footer-nbTFl3SE.js","/assets/ProductCard-DPRWfM9C.js","/assets/createLucideIcon-C5JrUapj.js","/assets/wishlistStore-Si6Kd9Hf.js","/assets/truck-NKcjLjv_.js","/assets/rotate-ccw-CuQorV_X.js","/assets/arrow-right-DeR2xW3R.js","/assets/button-Duw_jci8.js","/assets/shopping-bag-Dbmw10XU.js","/assets/input-C-URVyMo.js","/assets/loader-circle-C6asv-GC.js","/assets/heart-C-HxvXnT.js","/assets/package-B0T5r6rg.js"]}}},matches:$R[10]=[$R[11]={i:"__root__",u:1781151855590,s:"success",ssr:!0},$R[12]={i:"",u:1781151855590,s:"success",ssr:!0}],lastMatchId:""})($R["tsr"]);$_TSR.e();document.currentScript.remove()</script><script type="module" async="">import("/assets/index-Cq1Q5n3D.js")</script>
+<aside 
+	id="lovable-badge" 
+	role="complementary"
+	dir="ltr"
+	lang="en"
+	aria-label="Edit with Lovable">
+	<a 
+		id="lovable-badge-cta" 
+		target="_blank" 
+		href="https://lovable.dev/projects/c3f8f90f-2ca6-4c7a-ba6f-a769a008d394?utm_source=lovable-badge"
+		rel="noopener nofollow"
+		aria-label="Edit with Lovable">
+		<span id="lovable-badge-text">Edit with</span>
+		<svg xmlns="http://www.w3.org/2000/svg" width="52" height="16" fill="none" viewBox="0 0 52 16">
+  <path fill="#FCFBF8" fill-rule="evenodd" d="M20.318 5.25c.643 0 1.206.14 1.69.418a2.81 2.81 0 0 1 1.118 1.191c.266.513.4 1.115.4 1.807s-.134 1.296-.4 1.812a2.81 2.81 0 0 1-1.118 1.193c-.484.278-1.047.418-1.69.418s-1.208-.14-1.695-.418a2.85 2.85 0 0 1-1.125-1.193c-.262-.516-.393-1.12-.393-1.812s.131-1.294.393-1.807a2.848 2.848 0 0 1 1.125-1.191c.487-.279 1.052-.418 1.695-.418Zm0 1.425c-.27 0-.504.076-.7.228-.193.147-.34.37-.443.67-.102.295-.153.66-.153 1.093 0 .435.05.801.153 1.1.102.3.25.524.443.676.196.147.43.22.7.22.27 0 .502-.073.694-.22.193-.152.341-.375.443-.67.103-.299.153-.667.153-1.106 0-.65-.112-1.145-.337-1.481a1.08 1.08 0 0 0-.953-.51ZM32.7 5.25c.61 0 1.127.1 1.549.3.422.197.74.48.953.849.217.368.325.809.325 1.32v2.704c0 .29.02.562.062.812.044.245.108.4.19.466V12h-1.935a5.895 5.895 0 0 1-.105-.684 7.745 7.745 0 0 1-.02-.228 2.293 2.293 0 0 1-.151.203c-.205.242-.47.437-.793.584-.32.143-.685.215-1.094.215-.406 0-.77-.08-1.094-.24a1.845 1.845 0 0 1-.756-.682 1.984 1.984 0 0 1-.27-1.045c0-.606.178-1.069.535-1.388.356-.324.87-.534 1.542-.633l1.125-.16c.225-.032.403-.074.534-.123a.622.622 0 0 0 .288-.196.549.549 0 0 0 .093-.327.65.65 0 0 0-.11-.367.702.702 0 0 0-.32-.27c-.14-.07-.31-.105-.51-.105-.32 0-.576.083-.768.251-.193.164-.298.39-.314.676h-1.923c.016-.434.147-.82.393-1.155.25-.34.596-.604 1.039-.792.442-.189.954-.283 1.535-.283Zm.99 3.498a.98.98 0 0 1-.215.14 2.49 2.49 0 0 1-.584.178l-.473.092c-.315.061-.553.156-.713.283-.155.127-.233.305-.233.534 0 .23.084.412.252.547.168.135.383.203.645.203s.494-.058.694-.173c.201-.118.355-.282.461-.49.11-.21.166-.448.166-.714v-.6Zm4.526-2.375c.065-.125.138-.243.221-.349.197-.25.437-.44.719-.571.282-.135.6-.203.952-.203.528 0 .988.138 1.377.412.389.275.688.67.896 1.186.21.512.314 1.12.314 1.824 0 .7-.107 1.309-.32 1.825-.213.512-.518.906-.915 1.18-.393.275-.854.412-1.383.412-.352 0-.667-.062-.946-.184a1.832 1.832 0 0 1-.7-.554 2.2 2.2 0 0 1-.234-.383V12h-1.843V3h1.862v3.373Zm1.284.296c-.274 0-.51.085-.707.253-.192.163-.338.397-.436.7a3.376 3.376 0 0 0-.148 1.05c0 .406.05.759.148 1.058.098.299.243.53.436.694.197.164.433.246.707.246.279 0 .512-.082.7-.246.193-.164.336-.395.43-.694.099-.3.148-.652.148-1.058 0-.405-.05-.757-.147-1.056-.095-.299-.238-.53-.43-.694a1.015 1.015 0 0 0-.7-.253Zm9.416-1.419c.602 0 1.136.131 1.604.393.466.262.829.643 1.086 1.143.263.5.394 1.097.394 1.794 0 .25-.002.449-.006.596H47.51c.018.288.071.538.164.75a1.3 1.3 0 0 0 .491.596c.214.13.465.196.757.196.319 0 .583-.082.792-.246.209-.167.34-.403.393-.706h1.862a2.48 2.48 0 0 1-.485 1.235 2.54 2.54 0 0 1-1.051.805c-.439.188-.949.283-1.53.283-.655 0-1.225-.125-1.708-.375a2.672 2.672 0 0 1-1.13-1.143c-.267-.508-.4-1.137-.4-1.887 0-.712.14-1.327.418-1.843a2.86 2.86 0 0 1 1.155-1.186c.491-.27 1.051-.405 1.678-.405Zm-.044 1.345c-.274 0-.516.068-.725.203a1.29 1.29 0 0 0-.479.59 2.045 2.045 0 0 0-.132.498h2.562a1.873 1.873 0 0 0-.138-.602 1.061 1.061 0 0 0-.418-.516 1.243 1.243 0 0 0-.67-.173Z" clip-rule="evenodd"/>
+  <path fill="#FCFBF8" d="m26.605 9.995 1.342-4.566h1.924L27.628 12h-2.07l-2.33-6.57h1.98l1.397 4.565Zm-13.013.143h2.256c1.632 0 1.421 1.837 1.418 1.861h-5.603V3h1.93v7.138Zm31.516 1.861h-1.862V3h1.862v8.999Z"/>
+  <path fill="url(#a)" fill-rule="evenodd" d="M2.7 3c1.492 0 2.7 1.192 2.7 2.663v1.012h.9c1.49 0 2.7 1.192 2.7 2.662S7.791 12 6.3 12H0V5.663C0 4.193 1.209 3 2.7 3Z" clip-rule="evenodd"/>
+  <defs>
+    <radialGradient id="a" cx="0" cy="0" r="1" gradientTransform="matrix(-1.54236 7.07838 -10.231 -2.15602 4.627 5.022)" gradientUnits="userSpaceOnUse">
+      <stop offset=".106" stop-color="#FE7B02"/>
+      <stop offset=".394" stop-color="#FE3F21"/>
+      <stop offset=".608" stop-color="#F858BC"/>
+      <stop offset=".929" stop-color="#575ECF"/>
+    </radialGradient>
+  </defs>
+</svg>
 
-       .btn-start:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
 
-       .banner-section {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+	</a>
+	
+	<span id="lovable-badge-divider" aria-hidden="true"></span>
+	
+	<button 
+		id="lovable-badge-close"
+		aria-label="Dismiss"
+		title="Dismiss"
+		type="button">
+		<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 16 16" aria-hidden="true">
+			<path d="M10.646 4.646a.5.5 0 1 1 .707.708L8.707 8l2.646 2.646a.5.5 0 1 1-.707.707L8 8.707l-2.646 2.646a.5.5 0 1 1-.708-.707L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708L8 7.293l2.646-2.647Z"/>
+		</svg>
+	</button>
+</aside>
+<script>
+	// Don't show the lovable-badge if the page is in an iframe or if it's being rendered by puppeteer (screenshot service)
+	if (window.self !== window.top || navigator.userAgent.includes('puppeteer')) {
+		// the page is in an iframe
+		var badge = document.getElementById('lovable-badge');
+		if (badge) {
+			badge.style.display = 'none';
+		}
+	}
 
-       .banner {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-
-       .banner img {
-            width: 100%;
-            height: 300px;
-            object-fit: cover;
-            display: block;
-        }
-
-       .banner-options {
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-            background: #fafafa;
-        }
-
-        footer {
-            background: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 30px 20px;
-            margin-top: 50px;
-        }
-
-       .admin-link {
-            color: #95a5a6;
-            text-decoration: none;
-            font-size: 13px;
-            margin-top: 10px;
-            display: inline-block;
-            cursor: pointer;
-        }
-
-       .admin-link:hover {
-            color: white;
-        }
-
-       .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-
-       .modal.active {
-            display: flex;
-        }
-
-       .modal-content {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-       .modal-content h3 {
-            margin-bottom: 20px;
-            color: #2c3e50;
-        }
-
-       .form-group {
-            margin-bottom: 15px;
-        }
-
-       .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-
-       .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-family: 'Hind Siliguri', sans-serif;
-        }
-
-       .btn {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Hind Siliguri', sans-serif;
-            margin-right: 10px;
-        }
-
-       .btn:hover {
-            background: #2980b9;
-        }
-
-       .btn-danger {
-            background: #e74c3c;
-        }
-
-       .btn-danger:hover {
-            background: #c0392b;
-        }
-
-        @media (max-width: 768px) {
-           .bismillah { font-size: 24px; }
-           .header-content { flex-direction: column; gap: 15px; }
-           .banner img { height: 200px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="bismillah">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div>
-    <div class="subtitle">চলুন কেনাকাটা শুরু করা যাক</div>
-
-    <header>
-        <div class="header-content">
-            <div class="logo-section">
-                <img id="siteLogo" src="https://via.placeholder.com/50" alt="Logo">
-                <h1 id="siteName">BithiLikha Store</h1>
-          </div>
-    </header>
-
-    <div class="main-options">
-        <div class="option-card">
-            <h2>বই</h2>
-            <a href="https://bithilikha.lovable.app" class="btn-start">শুরু করুন</a>
-        </div>
-        <div class="option-card">
-            <h2>প্রোডাক্ট</h2>
-            <a href="https://bithilikha.bolt.host/" class="btn-start">শুরু করুন</a>
-        </div>
-    </div>
-
-    <div class="banner-section" id="bannerSection">
-        <div class="banner">
-            <img src="https://picsum.photos/1200/300?random=1" alt="Banner 1" class="banner-img">
-            <div class="banner-options">
-                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
-                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
-            </div>
-        </div>
-        <div class="banner">
-            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
-            <div class="banner-options">
-                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
-                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
-            </div>
-        </div>
-        <div class="banner">
-            <img src="https://picsum.photos/1200/300?random=3" alt="Banner 3" class="banner-img">
-            <div class="banner-options">
-                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
-                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
-            </div>
-        </div>
-        <div class="banner">
-            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
-            <div class="banner-options">
-                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
-                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
-             </div>
-         </div>
-         <div class="banner">
-            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
-            <div class="banner-options">
-                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
-                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
-            </div>
-        </div>
-             <div class="banner">
-            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
-            <div class="banner-options">
-                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
-                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
-            </div>
-        </div>
-             <div class="banner">
-            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
-            <div class="banner-options">
-                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
-                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
-            </div>
-        </div>
-             <div class="banner">
-            <img src="https://picsum.photos/1200/300?random=2" alt="Banner 2" class="banner-img">
-            <div class="banner-options">
-                <a href="https://bithilikha.lovable.app" class="btn-start">বই - শুরু করুন</a>
-                <a href="https://bithilikha.bolt.host/" class="btn-start">প্রোডাক্ট - শুরু করুন</a>
-            </div>
-        </div>
-    </div>
-
-    <footer>
-        <p>&copy; 2026 BithiLikha Store. সর্বস্বত্ব সংরক্ষিত।</p>
-        <a class="admin-link" onclick="openAdmin()">Admin</a>
-    </footer>
-
-    <div id="adminModal" class="modal">
-        <div class="modal-content">
-            <h3 id="adminTitle">অ্যাডমিন লগইন</h3>
-            <div id="loginForm">
-                <div class="form-group">
-                    <label>ইমেইল</label>
-                    <input type="email" id="adminEmail" placeholder="admin@example.com">
-                </div>
-                <div class="form-group">
-                    <label>পাসওয়ার্ড</label>
-                    <input type="password" id="adminPass" placeholder="••••••••">
-                </div>
-                <button class="btn" onclick="adminLogin()">লগইন</button>
-                <button class="btn-danger" onclick="closeAdmin()">বন্ধ করুন</button>
-            </div>
-            <div id="adminDashboard" style="display:none;">
-                <h4>Site Branding</h4>
-                <div class="form-group">
-                    <label>সাইটের নাম</label>
-                    <input type="text" id="editSiteName">
-                    <button class="btn" onclick="updateSiteName()">আপডেট করুন</button>
-                </div>
-                <div class="form-group">
-                    <label>লোগো আপলোড</label>
-                    <input type="file" id="logoFile" accept="image/*">
-                    <button class="btn" onclick="uploadLogo()">আপলোড করুন</button>
-                </div>
-                <hr style="margin: 20px 0;">
-                <h4>Banner Management</h4>
-                <div id="bannerList"></div>
-                <button class="btn-danger" onclick="adminLogout()">লগআউট</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'bn',
-                includedLanguages: 'bn,en,hi,ar,ur,es,fr',
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
-    <script>
-        // Load saved data
-        window.onload = function() {
-            if(localStorage.getItem('siteName')) {
-                document.getElementById('siteName').textContent = localStorage.getItem('siteName');
-                document.getElementById('editSiteName').value = localStorage.getItem('siteName');
-            }
-            if(localStorage.getItem('siteLogo')) {
-                document.getElementById('siteLogo').src = localStorage.getItem('siteLogo');
-            }
-
-            // Load banners
-            const banners = document.querySelectorAll('.banner-img');
-            banners.forEach((img, i) => {
-                const saved = localStorage.getItem('banner' + i);
-                if(saved) img.src = saved;
-            });
-        }
-
-        function toggleTranslate() {
-            const el = document.getElementById('google_translate_element');
-            el.style.display = el.style.display === 'none'? 'block' : 'none';
-        }
-
-        // Admin Functions
-        function openAdmin() {
-            document.getElementById('adminModal').classList.add('active');
-            if(localStorage.getItem('adminLoggedIn') === 'true') {
-                showDashboard();
-            }
-        }
-
-        function closeAdmin() {
-            document.getElementById('adminModal').classList.remove('active');
-        }
-
-        function adminLogin() {
-            const email = document.getElementById('adminEmail').value;
-            const pass = document.getElementById('adminPass').value;
-
-            let adminEmail = localStorage.getItem('adminEmail');
-            let adminPass = localStorage.getItem('adminPass');
-
-            if(!adminEmail) {
-                // First time signup
-                if(email && pass) {
-                    localStorage.setItem('adminEmail', email);
-                    localStorage.setItem('adminPass', pass);
-                    localStorage.setItem('adminLoggedIn', 'true');
-                    showDashboard();
-                    alert('অ্যাডমিন একাউন্ট তৈরি হয়েছে!');
-                } else {
-                    alert('ইমেইল ও পাসওয়ার্ড দিন');
-                }
-            } else {
-                // Login
-                if(email === adminEmail && pass === adminPass) {
-                    localStorage.setItem('adminLoggedIn', 'true');
-                    showDashboard();
-                } else {
-                    alert('ভুল ইমেইল বা পাসওয়ার্ড');
-                }
-            }
-        }
-
-        function showDashboard() {
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('adminDashboard').style.display = 'block';
-            document.getElementById('adminTitle').textContent = 'অ্যাডমিন ড্যাশবোর্ড';
-            loadBannerList();
-        }
-
-        function adminLogout() {
-            localStorage.setItem('adminLoggedIn', 'false');
-            location.reload();
-        }
-
-        function updateSiteName() {
-            const name = document.getElementById('editSiteName').value;
-            localStorage.setItem('siteName', name);
-            document.getElementById('siteName').textContent = name;
-            alert('সাইটের নাম আপডেট হয়েছে!');
-        }
-
-        function uploadLogo() {
-            const file = document.getElementById('logoFile').files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    localStorage.setItem('siteLogo', e.target.result);
-                    document.getElementById('siteLogo').src = e.target.result;
-                    alert('লোগো আপলোড হয়েছে!');
-                }
-                reader.readAsDataURL(file);
-            } else {
-                alert('ফাইল সিলেক্ট করুন');
-            }
-        }
-
-        function loadBannerList() {
-            const list = document.getElementById('bannerList');
-            list.innerHTML = '';
-            for(let i = 0; i < 8; i++){
-                const div = document.createElement('div');
-                div.className = 'form-group';
-                div.innerHTML = `
-                    <label>ব্যানার ${i+1}</label>
-                    <input type="file" id="bannerFile${i}" accept="image/*">
-                    <button class="btn" onclick="uploadBanner(${i})">আপলোড</button>
-                `;
-                list.appendChild(div);
-            }
-        }
-        
-
-        function uploadBanner(index) {
-            const file = document.getElementById('bannerFile' + index).files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    localStorage.setItem('banner' + index, e.target.result);
-                    document.querySelectorAll('.banner-img')[index].src = e.target.result;
-                    alert('ব্যানার ' + (index+1) + ' আপলোড হয়েছে!');
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-    </script>
-</body>
-</html>
+	// Add click event listener to close button with animation
+	var closeButton = document.getElementById('lovable-badge-close');
+	if (closeButton) {
+		closeButton.addEventListener('click', function(event) {
+			event.preventDefault();
+			event.stopPropagation();
+			var badge = document.getElementById('lovable-badge');
+			if (badge) {
+				badge.classList.add('closing');
+				setTimeout(function() {
+					if (badge) {
+						badge.style.display = 'none';
+					}
+				}, 240);
+			}
+		});
+	}
+</script>
+</body></html>
