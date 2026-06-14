@@ -1,0 +1,3049 @@
+<html lang="en"><head>
+<!-- Playables SDK -->
+<script>// Playables SDK v1.0.0
+// Game lifecycle bridge: rAF-based game-ready detection + event communication
+(function() {
+  'use strict';
+
+  // Idempotency: skip if already initialized (e.g., server-side injection
+  // followed by client-side inject-javascript via the Bloks webview component).
+  if (window.playablesSDK) return;
+
+  var HANDLER_NAME = 'playablesGameEventHandler';
+  var ANDROID_BRIDGE_NAME = '_MetaPlayablesBridge';
+  var RAF_FRAME_THRESHOLD = 3;
+
+  var gameReadySent = false;
+  var firstInteractionSent = false;
+  var errorSent = false;
+  var frameCount = 0;
+  var originalRAF = window.requestAnimationFrame;
+
+  // --- Transport Layer ---
+
+  function hasIOSBridge() {
+    return !!(window.webkit &&
+              window.webkit.messageHandlers &&
+              window.webkit.messageHandlers[HANDLER_NAME]);
+  }
+
+  function hasAndroidBridge() {
+    return !!(window[ANDROID_BRIDGE_NAME] &&
+              typeof window[ANDROID_BRIDGE_NAME].postEvent === 'function');
+  }
+
+  function isInIframe() {
+    return !!(window.parent && window.parent !== window);
+  }
+
+  function sendEvent(eventName, payload) {
+    var message = {
+      type: eventName,
+      payload: payload || {},
+      timestamp: Date.now()
+    };
+
+    if (hasIOSBridge()) {
+      try {
+        window.webkit.messageHandlers[HANDLER_NAME].postMessage(message);
+      } catch (e) { /* ignore */ }
+      return;
+    }
+
+    if (hasAndroidBridge()) {
+    try {
+      var p = payload || {};
+      p.__secureToken = window.__fbAndroidBridgeAuthToken || '';
+      p.timestamp = message.timestamp;
+      window[ANDROID_BRIDGE_NAME].postEvent(
+        eventName,
+        JSON.stringify(p)
+      );
+    } catch (e) { /* ignore */ }
+    return;
+  }
+
+    if (isInIframe()) {
+      try {
+        window.parent.postMessage(message, '*');
+      } catch (e) { /* ignore */ }
+      return;
+    }
+  }
+
+  // --- rAF Game-Ready Detection ---
+
+  function onFrame() {
+    if (gameReadySent) return;
+
+    frameCount++;
+    if (frameCount >= RAF_FRAME_THRESHOLD) {
+      gameReadySent = true;
+      sendEvent('game_ready', {
+        frame_count: frameCount,
+        detected_at: Date.now()
+      });
+      return;
+    }
+
+    originalRAF.call(window, onFrame);
+  }
+
+  if (originalRAF) {
+    window.requestAnimationFrame = function(callback) {
+      if (!gameReadySent) {
+        return originalRAF.call(window, function(timestamp) {
+          frameCount++;
+          if (frameCount >= RAF_FRAME_THRESHOLD && !gameReadySent) {
+            gameReadySent = true;
+            sendEvent('game_ready', {
+              frame_count: frameCount,
+              detected_at: Date.now()
+            });
+          }
+          callback(timestamp);
+        });
+      }
+      return originalRAF.call(window, callback);
+    };
+  }
+
+  // --- First User Interaction Detection ---
+
+  function setupFirstInteractionDetection() {
+    var events = ['touchstart', 'mousedown', 'keydown'];
+
+    function onFirstInteraction() {
+      if (firstInteractionSent) return;
+      firstInteractionSent = true;
+      sendEvent('user_interaction_start', null);
+
+      for (var i = 0; i < events.length; i++) {
+        document.removeEventListener(events[i], onFirstInteraction, true);
+      }
+    }
+
+    for (var i = 0; i < events.length; i++) {
+      document.addEventListener(events[i], onFirstInteraction, true);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFirstInteractionDetection);
+  } else {
+    setupFirstInteractionDetection();
+  }
+
+  // --- Auto Error Capture ---
+
+  window.addEventListener('error', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    sendEvent('error', {
+      message: event.message || 'Unknown error',
+      source: event.filename || '',
+      lineno: event.lineno || 0,
+      colno: event.colno || 0,
+      auto_captured: true
+    });
+  });
+
+  window.addEventListener('unhandledrejection', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    var reason = event.reason;
+    sendEvent('error', {
+      message: (reason instanceof Error) ? reason.message : String(reason),
+      type: 'unhandled_promise_rejection',
+      auto_captured: true
+    });
+  });
+
+  // --- Public API ---
+
+  window.playablesSDK = {
+    complete: function(score) {
+      sendEvent('game_ended', {
+        score: score,
+        completed: true
+      });
+    },
+
+    error: function(message) {
+      if (errorSent) return;
+      errorSent = true;
+      sendEvent('error', {
+        message: message || 'Unknown error',
+        auto_captured: false
+      });
+    },
+
+    sendEvent: function(eventName, payload) {
+      if (!eventName || typeof eventName !== 'string') return;
+      sendEvent(eventName, payload);
+    }
+  };
+
+  // Kick off rAF detection in case no game code calls rAF immediately
+  if (originalRAF) {
+    originalRAF.call(window, onFrame);
+  }
+})();</script>
+<!-- PLAYABLE_TOUCH_PATCH_V1 --><script>
+(function() {
+  if (window.__playableTouchPatchInstalled) return;
+  window.__playableTouchPatchInstalled = true;
+  var origAdd = EventTarget.prototype.addEventListener;
+  var blockedTypes = { touchstart: 1, touchmove: 1, wheel: 1 };
+  EventTarget.prototype.addEventListener = function(type, listener, options) {
+    if (blockedTypes[type]) {
+      if (options === undefined || options === null) {
+        options = { passive: true };
+      } else if (typeof options === 'boolean') {
+        options = { capture: options, passive: true };
+      } else {
+        options = Object.assign({}, options, { passive: true });
+      }
+    }
+    return origAdd.call(this, type, listener, options);
+  };
+})();
+</script><script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+<title>Chatly - Social Messenger</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async="" defer=""></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap');
+:root {
+  --primary: #6d28d9;
+  --primary-light: #8b5cf6;
+  --primary-dark: #5b21b6;
+  --bg-light: #f8fafc;
+  --bg-dark: #0f172a;
+  --card-dark: #1e293b;
+  --text-light: #1e293b;
+  --text-dark: #f1f5f9;
+}
+* { 
+  font-family: 'Inter', 'Hind Siliguri', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+body { 
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.dark { background-color: var(--bg-dark); color: var(--text-dark); }
+.light { background-color: var(--bg-light); color: var(--text-light); }
+.glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.dark .glass {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.chat-bubble {
+  max-width: 75%;
+  animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(109, 40, 217, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(109, 40, 217, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(109, 40, 217, 0); }
+}
+.pulse-ring { animation: pulse-ring 2s infinite; }
+.story-ring {
+  background: linear-gradient(45deg, #f59e0b, #ec4899, #8b5cf6);
+  padding: 2px;
+}
+.pro-gradient {
+  background: linear-gradient(135deg, #f59e0b 0%, #ec4899 50%, #8b5cf6 100%);
+}
+.typing-dot {
+  animation: typing 1.4s infinite ease-in-out;
+}
+.typing-dot:nth-child(1) { animation-delay: 0s; }
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-8px); }
+}
+.call-bg {
+  background: radial-gradient(circle at center, #5b21b6 0%, #1e1b4b 100%);
+}
+.otp-input input {
+  width: 3rem;
+  height: 3.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  -webkit-appearance: none;
+  appearance: none;
+}
+@media (max-width: 640px) {
+  .otp-input input {
+    width: 2.5rem;
+    height: 3rem;
+    font-size: 1.25rem;
+  }
+}
+.otp-input input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.otp-input input:focus {
+  outline: none;
+  border-color: #6d28d9 !important;
+  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.1);
+}
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .3s;
+  border-radius: 34px;
+}
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+input:checked + .toggle-slider {
+  background-color: #6d28d9;
+}
+input:checked + .toggle-slider:before {
+  transform: translateX(22px);
+}
+.loader {
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top: 2px solid #fff;
+  width: 16px;
+  height: 16px;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.toast {
+  animation: toastIn 0.3s ease-out;
+}
+@keyframes toastIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.verified-badge {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+}
+.admin-badge {
+  background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+}
+.guest-badge {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+}
+.verified-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: #3b82f6;
+  border-radius: 50%;
+  color: white;
+}
+.verified-check.admin {
+  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+}
+button, a, .cursor-pointer {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+button:not(.w-3):not(.w-4):not(.w-5), .tab-btn {
+  min-height: 44px;
+}
+select {
+  min-height: 44px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input[type="tel"], input[type="email"], input[type="text"], input[type="password"] {
+  min-height: 44px;
+  font-size: 16px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+@media (max-width: 640px) {
+  input[type="tel"], input[type="email"], input[type="text"], input[type="password"], select {
+    font-size: 16px !important;
+  }
+}
+.guest-restricted {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+.view-only-banner {
+  animation: slideDown 0.4s ease-out;
+}
+@keyframes slideDown {
+  from { transform: translateY(-100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+</style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.bottom-0{bottom:0px}.left-0{left:0px}.left-1\/2{left:50%}.left-3{left:0.75rem}.left-4{left:1rem}.right-0{right:0px}.top-0{top:0px}.top-1\/2{top:50%}.top-4{top:1rem}.-top-3{top:-0.75rem}.right-2{right:0.5rem}.right-4{right:1rem}.z-10{z-index:10}.z-\[100\]{z-index:100}.z-\[200\]{z-index:200}.z-\[90\]{z-index:90}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mr-1{margin-right:0.25rem}.mt-1{margin-top:0.25rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mb-12{margin-bottom:3rem}.mt-0\.5{margin-top:0.125rem}.mt-3{margin-top:0.75rem}.block{display:block}.inline-block{display:inline-block}.inline{display:inline}.flex{display:flex}.grid{display:grid}.hidden{display:none}.\!h-3{height:0.75rem !important}.\!h-4{height:1rem !important}.h-10{height:2.5rem}.h-12{height:3rem}.h-14{height:3.5rem}.h-16{height:4rem}.h-2{height:0.5rem}.h-2\.5{height:0.625rem}.h-24{height:6rem}.h-3{height:0.75rem}.h-3\.5{height:0.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-8{height:2rem}.h-screen{height:100vh}.h-1{height:0.25rem}.h-32{height:8rem}.h-7{height:1.75rem}.h-\[80vh\]{height:80vh}.h-full{height:100%}.max-h-\[90vh\]{max-height:90vh}.min-h-\[32px\]{min-height:32px}.min-h-\[44px\]{min-height:44px}.min-h-screen{min-height:100vh}.min-h-\[56px\]{min-height:56px}.min-h-\[64px\]{min-height:64px}.\!w-3{width:0.75rem !important}.\!w-4{width:1rem !important}.w-10{width:2.5rem}.w-12{width:3rem}.w-14{width:3.5rem}.w-16{width:4rem}.w-2{width:0.5rem}.w-2\.5{width:0.625rem}.w-24{width:6rem}.w-3{width:0.75rem}.w-3\.5{width:0.875rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-8{width:2rem}.w-full{width:100%}.w-32{width:8rem}.w-7{width:1.75rem}.min-w-0{min-width:0px}.min-w-\[44px\]{min-width:44px}.min-w-\[32px\]{min-width:32px}.min-w-\[56px\]{min-width:56px}.min-w-\[64px\]{min-width:64px}.max-w-7xl{max-width:80rem}.max-w-md{max-width:28rem}.max-w-sm{max-width:24rem}.max-w-2xl{max-width:42rem}.max-w-4xl{max-width:56rem}.max-w-6xl{max-width:72rem}.flex-1{flex:1 1 0%}.flex-shrink-0{flex-shrink:0}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-pointer{cursor:pointer}.resize-none{resize:none}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.items-baseline{align-items:baseline}.justify-start{justify-content:flex-start}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0\.5{gap:0.125rem}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-gray-200 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(229 231 235 / var(--tw-divide-opacity, 1))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.whitespace-nowrap{white-space:nowrap}.rounded-2xl{border-radius:1rem}.rounded-3xl{border-radius:1.5rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-t-3xl{border-top-left-radius:1.5rem;border-top-right-radius:1.5rem}.rounded-tl-sm{border-top-left-radius:0.125rem}.rounded-tr-sm{border-top-right-radius:0.125rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246 / var(--tw-border-opacity, 1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.border-violet-600{--tw-border-opacity:1;border-color:rgb(124 58 237 / var(--tw-border-opacity, 1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138 / var(--tw-border-opacity, 1))}.border-violet-200{--tw-border-opacity:1;border-color:rgb(221 214 254 / var(--tw-border-opacity, 1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-black\/60{background-color:rgb(0 0 0 / 0.6)}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.bg-gray-400{--tw-bg-opacity:1;background-color:rgb(156 163 175 / var(--tw-bg-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-gray-900\/50{background-color:rgb(17 24 39 / 0.5)}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-violet-50{--tw-bg-opacity:1;background-color:rgb(245 243 255 / var(--tw-bg-opacity, 1))}.bg-violet-600{--tw-bg-opacity:1;background-color:rgb(124 58 237 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/20{background-color:rgb(255 255 255 / 0.2)}.bg-white\/50{background-color:rgb(255 255 255 / 0.5)}.bg-white\/80{background-color:rgb(255 255 255 / 0.8)}.bg-black\/50{background-color:rgb(0 0 0 / 0.5)}.bg-black\/90{background-color:rgb(0 0 0 / 0.9)}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255 / var(--tw-bg-opacity, 1))}.bg-green-50{--tw-bg-opacity:1;background-color:rgb(240 253 244 / var(--tw-bg-opacity, 1))}.bg-purple-50{--tw-bg-opacity:1;background-color:rgb(250 245 255 / var(--tw-bg-opacity, 1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-violet-50\/50{background-color:rgb(245 243 255 / 0.5)}.bg-white\/30{background-color:rgb(255 255 255 / 0.3)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.bg-gradient-to-b{background-image:linear-gradient(to bottom, var(--tw-gradient-stops))}.from-amber-500{--tw-gradient-from:#f59e0b var(--tw-gradient-from-position);--tw-gradient-to:rgb(245 158 11 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-red-600{--tw-gradient-from:#dc2626 var(--tw-gradient-from-position);--tw-gradient-to:rgb(220 38 38 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-violet-500{--tw-gradient-from:#8b5cf6 var(--tw-gradient-from-position);--tw-gradient-to:rgb(139 92 246 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-violet-600{--tw-gradient-from:#7c3aed var(--tw-gradient-from-position);--tw-gradient-to:rgb(124 58 237 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-amber-50{--tw-gradient-from:#fffbeb var(--tw-gradient-from-position);--tw-gradient-to:rgb(255 251 235 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-black\/70{--tw-gradient-from:rgb(0 0 0 / 0.7) var(--tw-gradient-from-position);--tw-gradient-to:rgb(0 0 0 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-violet-50{--tw-gradient-from:#f5f3ff var(--tw-gradient-from-position);--tw-gradient-to:rgb(245 243 255 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-fuchsia-500{--tw-gradient-to:#d946ef var(--tw-gradient-to-position)}.to-orange-500{--tw-gradient-to:#f97316 var(--tw-gradient-to-position)}.to-orange-600{--tw-gradient-to:#ea580c var(--tw-gradient-to-position)}.to-fuchsia-50{--tw-gradient-to:#fdf4ff var(--tw-gradient-to-position)}.to-orange-50{--tw-gradient-to:#fff7ed var(--tw-gradient-to-position)}.to-transparent{--tw-gradient-to:transparent var(--tw-gradient-to-position)}.bg-clip-text{-webkit-background-clip:text;background-clip:text}.fill-amber-500{fill:#f59e0b}.object-cover{object-fit:cover}.p-1{padding:0.25rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.p-1\.5{padding:0.375rem}.p-8{padding:2rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.pb-2{padding-bottom:0.5rem}.pb-\[env\(safe-area-inset-bottom\)\]{padding-bottom:env(safe-area-inset-bottom)}.pl-10{padding-left:2.5rem}.pl-8{padding-left:2rem}.pr-4{padding-right:1rem}.pt-6{padding-top:1.5rem}.pr-12{padding-right:3rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-base{font-size:1rem;line-height:1.5rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.text-amber-500{--tw-text-opacity:1;color:rgb(245 158 11 / var(--tw-text-opacity, 1))}.text-amber-700{--tw-text-opacity:1;color:rgb(180 83 9 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-transparent{color:transparent}.text-violet-600{--tw-text-opacity:1;color:rgb(124 58 237 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-amber-600{--tw-text-opacity:1;color:rgb(217 119 6 / var(--tw-text-opacity, 1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74 / var(--tw-text-opacity, 1))}.text-purple-600{--tw-text-opacity:1;color:rgb(147 51 234 / var(--tw-text-opacity, 1))}.text-white\/70{color:rgb(255 255 255 / 0.7)}.opacity-20{opacity:0.2}.opacity-50{opacity:0.5}.opacity-60{opacity:0.6}.opacity-70{opacity:0.7}.opacity-80{opacity:0.8}.opacity-90{opacity:0.9}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.outline-none{outline:2px solid transparent;outline-offset:2px}.ring-2{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-4{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-violet-500{--tw-ring-opacity:1;--tw-ring-color:rgb(139 92 246 / var(--tw-ring-opacity, 1))}.ring-violet-500\/20{--tw-ring-color:rgb(139 92 246 / 0.2)}.ring-white\/20{--tw-ring-color:rgb(255 255 255 / 0.2)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:scale-\[1\.02\]:hover{--tw-scale-x:1.02;--tw-scale-y:1.02;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:border-gray-400:hover{--tw-border-opacity:1;border-color:rgb(156 163 175 / var(--tw-border-opacity, 1))}.hover\:border-violet-500:hover{--tw-border-opacity:1;border-color:rgb(139 92 246 / var(--tw-border-opacity, 1))}.hover\:bg-gray-100:hover{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-50:hover{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.hover\:bg-red-100:hover{--tw-bg-opacity:1;background-color:rgb(254 226 226 / var(--tw-bg-opacity, 1))}.hover\:bg-violet-100:hover{--tw-bg-opacity:1;background-color:rgb(237 233 254 / var(--tw-bg-opacity, 1))}.hover\:bg-violet-700:hover{--tw-bg-opacity:1;background-color:rgb(109 40 217 / var(--tw-bg-opacity, 1))}.hover\:bg-white\/30:hover{background-color:rgb(255 255 255 / 0.3)}.hover\:bg-gray-200:hover{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.hover\:bg-red-600:hover{--tw-bg-opacity:1;background-color:rgb(220 38 38 / var(--tw-bg-opacity, 1))}.hover\:bg-violet-50:hover{--tw-bg-opacity:1;background-color:rgb(245 243 255 / var(--tw-bg-opacity, 1))}.hover\:bg-white\/20:hover{background-color:rgb(255 255 255 / 0.2)}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.hover\:opacity-100:hover{opacity:1}.hover\:shadow-lg:hover{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-red-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(239 68 68 / var(--tw-ring-opacity, 1))}.focus\:ring-violet-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(139 92 246 / var(--tw-ring-opacity, 1))}.disabled\:cursor-not-allowed:disabled{cursor:not-allowed}.disabled\:opacity-50:disabled{opacity:0.5}.group:hover .group-hover\:scale-110{--tw-scale-x:1.1;--tw-scale-y:1.1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@media (min-width: 640px){.sm\:inline{display:inline}.sm\:gap-2{gap:0.5rem}.sm\:p-4{padding:1rem}.sm\:p-8{padding:2rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 768px){.md\:hidden{display:none}.md\:w-80{width:20rem}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-5{grid-template-columns:repeat(5, minmax(0, 1fr))}.md\:flex-row{flex-direction:row}.md\:p-8{padding:2rem}}@media (min-width: 1024px){.lg\:w-96{width:24rem}}@media (prefers-color-scheme: dark){.dark\:divide-slate-700 > :not([hidden]) ~ :not([hidden]){--tw-divide-opacity:1;border-color:rgb(51 65 85 / var(--tw-divide-opacity, 1))}.dark\:border-gray-600{--tw-border-opacity:1;border-color:rgb(75 85 99 / var(--tw-border-opacity, 1))}.dark\:border-gray-700{--tw-border-opacity:1;border-color:rgb(55 65 81 / var(--tw-border-opacity, 1))}.dark\:border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.dark\:border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.dark\:border-slate-900{--tw-border-opacity:1;border-color:rgb(15 23 42 / var(--tw-border-opacity, 1))}.dark\:border-amber-900\/50{border-color:rgb(120 53 15 / 0.5)}.dark\:border-violet-900\/50{border-color:rgb(76 29 149 / 0.5)}.dark\:bg-amber-950\/30{background-color:rgb(69 26 3 / 0.3)}.dark\:bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.dark\:bg-slate-800\/50{background-color:rgb(30 41 59 / 0.5)}.dark\:bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.dark\:bg-slate-900\/50{background-color:rgb(15 23 42 / 0.5)}.dark\:bg-slate-900\/80{background-color:rgb(15 23 42 / 0.8)}.dark\:bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.dark\:bg-blue-950\/30{background-color:rgb(23 37 84 / 0.3)}.dark\:bg-gray-800\/30{background-color:rgb(31 41 55 / 0.3)}.dark\:bg-green-950\/30{background-color:rgb(5 46 22 / 0.3)}.dark\:bg-purple-950\/30{background-color:rgb(59 7 100 / 0.3)}.dark\:bg-violet-950\/20{background-color:rgb(46 16 101 / 0.2)}.dark\:from-amber-950\/20{--tw-gradient-from:rgb(69 26 3 / 0.2) var(--tw-gradient-from-position);--tw-gradient-to:rgb(69 26 3 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.dark\:from-violet-950\/30{--tw-gradient-from:rgb(46 16 101 / 0.3) var(--tw-gradient-from-position);--tw-gradient-to:rgb(46 16 101 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.dark\:to-fuchsia-950\/30{--tw-gradient-to:rgb(74 4 78 / 0.3) var(--tw-gradient-to-position)}.dark\:to-orange-950\/20{--tw-gradient-to:rgb(67 20 7 / 0.2) var(--tw-gradient-to-position)}.dark\:text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.dark\:text-gray-200{--tw-text-opacity:1;color:rgb(229 231 235 / var(--tw-text-opacity, 1))}.dark\:text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.dark\:text-violet-400{--tw-text-opacity:1;color:rgb(167 139 250 / var(--tw-text-opacity, 1))}.dark\:hover\:border-slate-600:hover{--tw-border-opacity:1;border-color:rgb(71 85 105 / var(--tw-border-opacity, 1))}.dark\:hover\:bg-red-900\/30:hover{background-color:rgb(127 29 29 / 0.3)}.dark\:hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.dark\:hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.dark\:hover\:bg-slate-800\/50:hover{background-color:rgb(30 41 59 / 0.5)}}</style></head>
+<body class="light" id="app-body">
+<!-- Toast Container -->
+<div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] space-y-2 px-4 w-full max-w-md"></div>
+
+<!-- View Only Mode Banner -->
+<div id="view-only-banner" class="hidden view-only-banner fixed top-0 left-0 right-0 z-[90] bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-3 shadow-lg">
+  <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2 flex-1 min-w-0">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="eye" aria-hidden="true" class="lucide lucide-eye w-5 h-5 flex-shrink-0"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+      <p class="text-sm font-medium">
+        <span class="hidden sm:inline">View Only Mode:</span> Verify phone or email to unlock messaging and calls
+      </p>
+    </div>
+    <button id="upgrade-from-banner-btn" class="px-4 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-semibold whitespace-nowrap transition min-h-[32px]">
+      Verify Now
+    </button>
+  </div>
+</div>
+
+<!-- Admin Login Modal -->
+<div id="admin-login-modal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full shadow-2xl">
+    <div class="bg-gradient-to-r from-red-600 to-orange-600 p-6 rounded-t-3xl text-white">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="shield-alert" aria-hidden="true" class="lucide lucide-shield-alert w-6 h-6"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="M12 8v4"></path><path d="M12 16h.01"></path></svg>
+        </div>
+        <div>
+          <h2 class="text-xl font-bold">Admin Access Required</h2>
+          <p class="text-sm opacity-90">Enter admin credentials to continue</p>
+        </div>
+      </div>
+    </div>
+    <div class="p-6">
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm font-medium mb-2 block">Admin Password / অ্যাডমিন পাসওয়ার্ড</label>
+          <div class="relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" aria-hidden="true" class="lucide lucide-lock w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 opacity-50"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <input id="admin-password-input" type="password" placeholder="Enter admin password" class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-red-500 outline-none transition">
+          </div>
+          <p id="admin-password-error" class="text-xs text-red-500 mt-1 hidden"></p>
+        </div>
+        <button id="admin-auth-btn" class="w-full bg-gradient-to-r from-red-600 to-orange-600 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition duration-200 flex items-center justify-center gap-2 min-h-[44px]">
+          <span id="admin-auth-text">Authenticate</span>
+          <div id="admin-auth-loader" class="loader hidden"></div>
+        </button>
+        <button id="admin-cancel-btn" class="w-full py-3 text-sm opacity-70 hover:opacity-100 transition min-h-[44px]">
+          Cancel &amp; Return to Login
+        </button>
+      </div>
+      <div class="mt-4 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-xl">
+        <p class="text-xs text-amber-700 dark:text-amber-400">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="alert-triangle" aria-hidden="true" class="lucide lucide-alert-triangle w-3 h-3 inline mr-1"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
+          Unauthorized access attempts are logged and monitored
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Login Screen -->
+<div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div id="phone-login" class="glass rounded-3xl p-6 sm:p-8 shadow-2xl">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-gradient-to-br from-violet-600 to-fuchsia-500 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="message-circle" aria-hidden="true" class="lucide lucide-message-circle w-8 h-8 text-white"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"></path></svg>
+        </div>
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent">Chatly</h1>
+        <p class="text-sm opacity-70 mt-2">Connect with everyone, everywhere</p>
+      </div>
+
+      <!-- Continue with Google -->
+      <button id="google-signin-btn" class="w-full mb-6 bg-white dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-gray-200 py-3 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-slate-750 hover:border-gray-400 dark:hover:border-slate-600 transition duration-200 flex items-center justify-center gap-3 min-h-[44px] shadow-sm">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
+        </svg>
+        <span>Continue with Google</span>
+      </button>
+
+      <div class="relative mb-6">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-300 dark:border-slate-700"></div>
+        </div>
+        <div class="relative flex justify-center text-xs">
+          <span class="px-4 bg-white/80 dark:bg-slate-900/80 text-gray-500 dark:text-gray-400">Or continue with</span>
+        </div>
+      </div>
+
+      <!-- Auth Tabs -->
+      <div class="flex gap-2 p-1 bg-gray-100 dark:bg-slate-800 rounded-xl mb-6">
+        <button id="phone-tab" class="auth-tab flex-1 py-2.5 rounded-lg text-sm font-semibold bg-white dark:bg-slate-900 shadow-sm text-violet-600 min-h-[44px]">Phone</button>
+        <button id="email-tab" class="auth-tab flex-1 py-2.5 rounded-lg text-sm font-semibold opacity-60 hover:opacity-100 transition min-h-[44px]">Email</button>
+      </div>
+      
+      <!-- Phone Auth -->
+      <div id="phone-auth-section">
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-medium mb-2 block">Mobile Number / মোবাইল নম্বর</label>
+            <div class="flex gap-2">
+              <select id="country-code" class="px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition text-base min-h-[44px]">
+                <option value="+880">🇧🇩 +880</option>
+                <option value="+1">🇺🇸 +1</option>
+                <option value="+91">🇮🇳 +91</option>
+                <option value="+44">🇬🇧 +44</option>
+                <option value="+971">🇦🇪 +971</option>
+                <option value="+65">🇸🇬 +65</option>
+              </select>
+              <input id="phone-input" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="1712345678" autocomplete="tel" class="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition text-base min-h-[44px]" required="">
+            </div>
+            <p id="phone-error" class="text-xs text-red-500 mt-1 hidden"></p>
+            <p class="text-xs opacity-60 mt-1">Demo OTP: 999999</p>
+          </div>
+          <button id="send-otp-btn" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition duration-200 flex items-center justify-center gap-2 min-h-[44px]">
+            <span id="send-otp-text">Send OTP / OTP পাঠান</span>
+            <div id="send-otp-loader" class="loader hidden"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Email Auth -->
+      <div id="email-auth-section" class="hidden">
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm font-medium mb-2 block">Email Address / ইমেইল</label>
+            <div class="relative">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="mail" aria-hidden="true" class="lucide lucide-mail w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 opacity-50"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
+              <input id="email-input" type="email" inputmode="email" placeholder="your@email.com" autocomplete="email" class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition text-base min-h-[44px]" required="">
+            </div>
+            <p id="email-error" class="text-xs text-red-500 mt-1 hidden"></p>
+            <p class="text-xs opacity-60 mt-1">Demo OTP: 888888</p>
+          </div>
+          <button id="send-email-otp-btn" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition duration-200 flex items-center justify-center gap-2 min-h-[44px]">
+            <span id="send-email-otp-text">Send Verification Code</span>
+            <div id="send-email-otp-loader" class="loader hidden"></div>
+          </button>
+          <div class="text-center">
+            <button id="magic-link-btn" class="text-sm text-violet-600 dark:text-violet-400 font-medium hover:underline min-h-[44px] px-4">
+              Or send magic link instead
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <button id="theme-toggle-login" class="w-full flex items-center justify-center gap-2 py-2 text-sm opacity-70 hover:opacity-100 transition min-h-[44px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="moon" aria-hidden="true" class="lucide lucide-moon w-4 h-4"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"></path></svg>
+          <span>Dark Mode</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- OTP Verification Screen -->
+    <div id="otp-screen" class="hidden glass rounded-3xl p-6 sm:p-8 shadow-2xl">
+      <button id="back-to-auth" class="mb-4 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition min-h-[44px] min-w-[44px]">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-left" aria-hidden="true" class="lucide lucide-arrow-left w-5 h-5"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
+      </button>
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-gradient-to-br from-violet-600 to-fuchsia-500 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="shield-check" aria-hidden="true" class="lucide lucide-shield-check w-8 h-8 text-white"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path></svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Verify Code / কোড যাচাই</h2>
+        <p class="text-sm opacity-70">We sent a 6-digit code to <span id="contact-display" class="font-semibold">+880 1XXX-XXXXXX</span></p>
+      </div>
+      
+      <div class="otp-input flex justify-center gap-2 mb-2">
+        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="0">
+        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="1">
+        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="2">
+        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="3">
+        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="4">
+        <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="5">
+      </div>
+      <p id="otp-error" class="text-xs text-red-500 text-center mb-4 hidden"></p>
+      
+      <button id="verify-otp-btn" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition duration-200 mb-4 flex items-center justify-center gap-2 min-h-[44px]">
+        <span id="verify-otp-text">Verify &amp; Continue / যাচাই করুন</span>
+        <div id="verify-otp-loader" class="loader hidden"></div>
+      </button>
+      
+      <div class="text-center">
+        <p class="text-sm opacity-70">Didn't receive code? <button id="resend-otp" class="text-violet-600 dark:text-violet-400 font-semibold hover:underline disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] px-2">Resend</button></p>
+        <p class="text-xs opacity-50 mt-2" id="resend-timer"></p>
+      </div>
+    </div>
+
+    <!-- Username Setup Screen -->
+    <div id="username-screen" class="hidden glass rounded-3xl p-6 sm:p-8 shadow-2xl">
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-gradient-to-br from-violet-600 to-fuchsia-500 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="at-sign" aria-hidden="true" class="lucide lucide-at-sign w-8 h-8 text-white"><circle cx="12" cy="12" r="4"></circle><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"></path></svg>
+        </div>
+        <h2 class="text-2xl font-bold mb-2">Choose Username / ইউজারনেম</h2>
+        <p class="text-sm opacity-70">People can find you without your phone or email</p>
+      </div>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="text-sm font-medium mb-2 block">Your Name / আপনার নাম</label>
+          <input id="fullname-input" type="text" placeholder="Ayesha Khan" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition text-base min-h-[44px]">
+        </div>
+        <div>
+          <label class="text-sm font-medium mb-2 block">Username / ইউজারনেম</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">@</span>
+            <input id="username-input" type="text" inputmode="text" placeholder="ayesha_khan" class="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition text-base min-h-[44px]">
+          </div>
+          <p id="username-status" class="text-xs mt-1 opacity-70"></p>
+        </div>
+        <button id="complete-signup-btn" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition duration-200 min-h-[44px]">
+          Complete Setup / সম্পূর্ণ করুন
+        </button>
+        <button id="skip-username-btn" class="w-full py-3 text-sm opacity-70 hover:opacity-100 transition min-h-[44px]">
+          Skip for now / পরে করব
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main App -->
+<div id="main-app" class="hidden h-screen flex flex-col md:flex-row overflow-hidden">
+  <!-- Sidebar -->
+  <div id="sidebar" class="w-full md:w-80 lg:w-96 border-r border-gray-200 dark:border-slate-700 flex flex-col bg-white/50 dark:bg-slate-900/50">
+    <!-- Top Bar -->
+    <div class="p-4 border-b border-gray-200 dark:border-slate-700">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3 cursor-pointer" id="profile-btn">
+          <img src="https://i.pravatar.cc/100?img=12" alt="profile" class="w-10 h-10 rounded-full object-cover ring-2 ring-violet-500">
+          <div>
+            <h2 class="font-semibold text-sm flex items-center gap-1" id="user-display-name">
+              Ayesha Khan 
+              <span id="user-verified-badge-chat" class="verified-check hidden"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-3 h-3"><path d="M20 6 9 17l-5-5"></path></svg></span>
+            </h2>
+            <p class="text-xs opacity-60 flex items-center gap-1" id="user-username-badge">
+              @ayesha_khan
+            </p>
+          </div>
+        <div class="flex gap-1 sm:gap-2">
+          <button id="admin-panel-btn" class="hidden p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition admin-badge text-white" title="Admin Panel">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="shield" aria-hidden="true" class="lucide lucide-shield w-5 h-5"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>
+          </button>
+          <button id="admin-logout-btn" class="hidden p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition text-red-600" title="Logout Admin">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="log-out" aria-hidden="true" class="lucide lucide-log-out w-5 h-5"><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path></svg>
+          </button>
+          <button id="pro-btn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition" title="Pro Plan">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="crown" aria-hidden="true" class="lucide lucide-crown w-5 h-5 text-amber-500"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"></path><path d="M5 21h14"></path></svg>
+          </button>
+          <button id="theme-toggle" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="moon" aria-hidden="true" class="lucide lucide-moon w-5 h-5 moon-icon"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"></path></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sun" aria-hidden="true" class="lucide lucide-sun w-5 h-5 sun-icon hidden"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+          </button>
+          <button id="settings-btn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="settings" aria-hidden="true" class="lucide lucide-settings w-5 h-5"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          </button>
+        </div>
+      </div>
+      <div class="relative">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="search" aria-hidden="true" class="lucide lucide-search w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 opacity-50"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+        <input id="search-input" type="text" inputmode="search" placeholder="Search @username, phone, email..." class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-gray-100 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-violet-500 text-base sm:text-sm min-h-[44px]">
+      </div>
+    </div>
+
+    <!-- Stories -->
+    <div class="px-4 py-4 border-b border-gray-200 dark:border-slate-700">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-semibold text-sm">Stories / স্ট্যাটাস</h3>
+        <button class="text-xs text-violet-600 dark:text-violet-400 hover:underline min-h-[44px] px-2">View All</button>
+      </div>
+      <div class="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+        <div class="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group">
+          <div class="relative">
+            <img src="https://i.pravatar.cc/100?img=12" class="w-14 h-14 rounded-full object-cover">
+            <div class="absolute bottom-0 right-0 w-5 h-5 bg-violet-600 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="plus" aria-hidden="true" class="lucide lucide-plus w-3 h-3 text-white"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            </div>
+          </div>
+          <span class="text-xs">Your Story</span>
+        </div>
+        <div class="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group story-item">
+          <div class="story-ring rounded-full">
+            <img src="https://i.pravatar.cc/100?img=33" class="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-900">
+          </div>
+          <span class="text-xs flex items-center gap-0.5">Rahul <span class="verified-check !w-3 !h-3"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-2 h-2"><path d="M20 6 9 17l-5-5"></path></svg></span></span>
+        </div>
+        <div class="flex flex-col items-center gap-1.5 flex-shrink-0 cursor-pointer group story-item">
+          <div class="story-ring rounded-full">
+            <img src="https://i.pravatar.cc/100?img=45" class="w-14 h-14 rounded-full object-cover border-2 border-white dark:border-slate-900">
+          </div>
+          <span class="text-xs">Fatima</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex border-b border-gray-200 dark:border-slate-700">
+      <button class="tab-btn flex-1 py-3 text-sm font-medium border-b-2 border-violet-600 text-violet-600" data-tab="chats">Chats</button>
+      <button class="tab-btn flex-1 py-3 text-sm font-medium opacity-60 hover:opacity-100" data-tab="groups">Groups</button>
+      <button class="tab-btn flex-1 py-3 text-sm font-medium opacity-60 hover:opacity-100" data-tab="contacts">Contacts</button>
+    </div>
+
+    <!-- Chat List -->
+    <div id="chats-list" class="flex-1 overflow-y-auto scrollbar-hide">
+      <div class="chat-item p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 cursor-pointer transition border-b border-gray-100 dark:border-slate-800" data-chat="1">
+        <div class="flex items-start gap-3">
+          <div class="relative">
+            <img src="https://i.pravatar.cc/100?img=33" class="w-12 h-12 rounded-full object-cover">
+            <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white dark:border-slate-900"></div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <h4 class="font-semibold truncate flex items-center gap-1">
+                Rahul Ahmed
+                <span class="verified-check"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-3 h-3"><path d="M20 6 9 17l-5-5"></path></svg></span>
+              </h4>
+              <span class="text-xs opacity-60">2m</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <p class="text-sm opacity-70 truncate">Typing...</p>
+              <span class="bg-violet-600 text-white text-xs px-2 py-0.5 rounded-full">3</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 cursor-pointer transition border-b border-gray-100 dark:border-slate-800" data-chat="2">
+        <div class="flex items-start gap-3">
+          <div class="relative">
+            <img src="https://i.pravatar.cc/100?img=20" class="w-12 h-12 rounded-full object-cover">
+            <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-violet-600 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="users" aria-hidden="true" class="lucide lucide-users w-2 h-2 text-white"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
+            </div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <h4 class="font-semibold truncate">Design Team</h4>
+              <span class="text-xs opacity-60">10m</span>
+            </div>
+            <p class="text-sm opacity-70 truncate">Fatima: Let's finalize the mockup</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Groups List -->
+    <div id="groups-list" class="hidden flex-1 overflow-y-auto scrollbar-hide">
+      <div class="chat-item p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 cursor-pointer transition border-b border-gray-100 dark:border-slate-800">
+        <div class="flex items-start gap-3">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center text-white font-bold">DT</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between mb-1">
+              <h4 class="font-semibold truncate">Design Team</h4>
+              <span class="text-xs opacity-60">10m</span>
+            </div>
+            <p class="text-sm opacity-70 truncate">8 members • Fatima: Let's finalize</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contacts List -->
+    <div id="contacts-list" class="hidden flex-1 overflow-y-auto scrollbar-hide">
+      <div class="p-3">
+        <button id="sync-contacts-btn" class="w-full mb-4 p-3 bg-violet-50 dark:bg-slate-800 rounded-xl flex items-center justify-center gap-2 hover:bg-violet-100 dark:hover:bg-slate-700 transition min-h-[44px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="user-plus" aria-hidden="true" class="lucide lucide-user-plus w-4 h-4 text-violet-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="19" x2="19" y1="8" y2="14"></line><line x1="22" x2="16" y1="11" y2="11"></line></svg>
+          <span class="text-sm font-medium text-violet-600">Sync Contacts</span>
+        </button>
+        <h4 class="text-xs font-semibold opacity-60 uppercase mb-2 px-1">Favorites / প্রিয়</h4>
+        <div class="space-y-1" id="contacts-container">
+          <div class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-slate-800/50 rounded-lg cursor-pointer min-h-[44px]">
+            <img src="https://i.pravatar.cc/100?img=33" class="w-10 h-10 rounded-full">
+            <div class="flex-1">
+              <p class="font-medium text-sm flex items-center gap-1">
+                Rahul Ahmed 
+                <span class="verified-check !w-4 !h-4"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-2.5 h-2.5"><path d="M20 6 9 17l-5-5"></path></svg></span>
+              </p>
+              <p class="text-xs opacity-60">+880 1712-345678</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="star" aria-hidden="true" class="lucide lucide-star w-4 h-4 text-amber-500 fill-amber-500"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"></path></svg>
+          </div>
+          <div class="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-slate-800/50 rounded-lg cursor-pointer min-h-[44px]">
+            <img src="https://i.pravatar.cc/100?img=45" class="w-10 h-10 rounded-full">
+            <div class="flex-1">
+              <p class="font-medium text-sm">Fatima Noor</p>
+              <p class="text-xs opacity-60">@fatima_noor</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chat Area -->
+  <div class="flex-1 flex flex-col bg-gray-50 dark:bg-slate-950">
+    <!-- Empty State -->
+    <div id="empty-chat" class="flex-1 flex items-center justify-center p-4">
+      <div class="text-center">
+        <div class="w-24 h-24 bg-gradient-to-br from-violet-600 to-fuchsia-500 rounded-3xl mx-auto mb-4 flex items-center justify-center opacity-20">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="message-circle" aria-hidden="true" class="lucide lucide-message-circle w-12 h-12 text-white"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"></path></svg>
+        </div>
+        <h3 class="text-xl font-semibold mb-2">Select a chat to start messaging</h3>
+        <p class="text-sm opacity-60">আলাপ শুরু করতে একটি চ্যাট নির্বাচন করুন</p>
+      </div>
+    </div>
+
+    <!-- Active Chat -->
+    <div id="active-chat" class="hidden flex-1 flex flex-col">
+      <!-- Chat Header -->
+      <div class="p-3 sm:p-4 border-b border-gray-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <button id="back-btn" class="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg min-h-[44px] min-w-[44px]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-left" aria-hidden="true" class="lucide lucide-arrow-left w-5 h-5"><path d="m12 19-7-7 7-7"></path><path d="M19 12H5"></path></svg>
+            </button>
+            <img src="https://i.pravatar.cc/100?img=33" class="w-10 h-10 rounded-full object-cover">
+            <div>
+              <h3 class="font-semibold flex items-center gap-1">
+                Rahul Ahmed
+                <span class="verified-check"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-3 h-3"><path d="M20 6 9 17l-5-5"></path></svg></span>
+              </h3>
+              <p class="text-xs opacity-60 flex items-center gap-1">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span id="chat-status">Online</span>
+              </p>
+            </div>
+          </div>
+          <div class="flex gap-1 sm:gap-2">
+            <button id="voice-call-btn" class="guest-action-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition min-h-[44px] min-w-[44px]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="phone" aria-hidden="true" class="lucide lucide-phone w-5 h-5"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
+            </button>
+            <button id="video-call-btn" class="guest-action-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition min-h-[44px] min-w-[44px]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="video" aria-hidden="true" class="lucide lucide-video w-5 h-5"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg>
+            </button>
+            <button id="chat-info-btn" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 transition min-h-[44px] min-w-[44px]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="info" aria-hidden="true" class="lucide lucide-info w-5 h-5"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
+        <div class="flex justify-start">
+          <div class="chat-bubble bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
+            <p class="text-sm">Hey Ayesha! How's the new project going?</p>
+            <span class="text-xs opacity-50 mt-1 block">10:24 AM</span>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <div class="chat-bubble bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-md">
+            <p class="text-sm">Going great! Just finished the UI mockups 🎨</p>
+            <span class="text-xs opacity-80 mt-1 block text-right">10:25 AM ✓✓</span>
+          </div>
+        </div>
+        <div id="typing-indicator" class="hidden flex justify-start">
+          <div class="bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
+            <div class="flex gap-1">
+              <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+              <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+              <div class="w-2 h-2 bg-gray-400 rounded-full typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div class="p-3 sm:p-4 border-t border-gray-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]">
+        <div id="guest-input-overlay" class="hidden absolute inset-0 bg-gray-900/50 backdrop-blur-sm z-10 flex items-center justify-center rounded-xl">
+          <div class="bg-white dark:bg-slate-800 px-6 py-4 rounded-2xl shadow-xl text-center max-w-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="lock" aria-hidden="true" class="lucide lucide-lock w-8 h-8 text-amber-500 mx-auto mb-2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <p class="font-semibold mb-1">Messaging Disabled</p>
+            <p class="text-xs opacity-70 mb-3">Verify phone or email to send messages</p>
+            <button id="guest-upgrade-btn" class="px-4 py-2 bg-violet-600 text-white rounded-lg text-sm font-semibold hover:bg-violet-700 transition min-h-[44px]">
+              Verify Now
+            </button>
+          </div>
+        </div>
+        <div class="flex items-end gap-2 relative">
+          <button class="guest-action-btn p-2.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition min-h-[44px] min-w-[44px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="paperclip" aria-hidden="true" class="lucide lucide-paperclip w-5 h-5"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"></path></svg>
+          </button>
+          <button class="guest-action-btn p-2.5 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition min-h-[44px] min-w-[44px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="smile" aria-hidden="true" class="lucide lucide-smile w-5 h-5"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg>
+          </button>
+          <div class="flex-1 relative">
+            <input id="message-input" type="text" placeholder="Type a message / মেসেজ লিখুন..." class="w-full px-4 py-3 pr-12 rounded-xl bg-gray-100 dark:bg-slate-800 outline-none focus:ring-2 focus:ring-violet-500 text-base min-h-[44px]">
+            <button id="ai-assist-btn" class="guest-action-btn absolute right-2 top-1/2 -translate-y-1/2 p-1.5 hover:bg-violet-100 dark:hover:bg-slate-700 rounded-lg transition group min-h-[32px] min-w-[32px]">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="sparkles" aria-hidden="true" class="lucide lucide-sparkles w-4 h-4 text-violet-600 group-hover:scale-110 transition"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"></path><path d="M20 2v4"></path><path d="M22 4h-4"></path><circle cx="4" cy="20" r="2"></circle></svg>
+            </button>
+          </div>
+          <button id="send-btn" class="guest-action-btn p-3 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-xl hover:shadow-lg hover:scale-105 transition min-h-[44px] min-w-[44px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="send" aria-hidden="true" class="lucide lucide-send w-5 h-5"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg>
+          </button>
+          <button id="mic-btn" class="guest-action-btn p-3 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition min-h-[44px] min-w-[44px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="mic" aria-hidden="true" class="lucide lucide-mic w-5 h-5"><path d="M12 19v3"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><rect x="9" y="2" width="6" height="13" rx="3"></rect></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Modal -->
+<div id="profile-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="relative p-6">
+      <button id="close-profile" class="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg min-h-[44px] min-w-[44px]">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+      </button>
+      
+      <div class="text-center mb-6">
+        <div class="relative inline-block mb-4">
+          <img src="https://i.pravatar.cc/200?img=12" class="w-24 h-24 rounded-full mx-auto ring-4 ring-violet-500/20">
+          <button class="absolute bottom-0 right-0 w-8 h-8 bg-violet-600 rounded-full flex items-center justify-center border-4 border-white dark:border-slate-900 min-h-[32px] min-w-[32px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="camera" aria-hidden="true" class="lucide lucide-camera w-4 h-4 text-white"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"></path><circle cx="12" cy="13" r="3"></circle></svg>
+          </button>
+        </div>
+        <h3 class="text-xl font-bold flex items-center justify-center gap-2 flex-wrap" id="profile-name-display">
+          Ayesha Khan
+          <span id="profile-verified-badge" class="hidden verified-badge text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="badge-check" aria-hidden="true" class="lucide lucide-badge-check w-3 h-3"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg>Verified
+          </span>
+          <span id="profile-guest-badge" class="hidden guest-badge text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="eye" aria-hidden="true" class="lucide lucide-eye w-3 h-3"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>Guest
+          </span>
+        </h3>
+        <p class="text-sm opacity-70 mt-1" id="profile-status">Hey there! I'm using Chatly</p>
+        <p class="text-xs opacity-50 mt-2" id="profile-verification-note"></p>
+      </div>
+
+      <div class="space-y-3 mb-6">
+        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="mail" aria-hidden="true" class="lucide lucide-mail w-5 h-5 text-violet-600 flex-shrink-0"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs opacity-60">Email Address / Account Type</p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="font-medium text-sm truncate" id="profile-email">Not linked</p>
+              <span id="email-verified-status" class="hidden text-xs verified-badge text-white px-2 py-0.5 rounded-full flex-shrink-0">Verified</span>
+            </div>
+          <button id="link-email-btn" class="p-2 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg text-xs text-violet-600 min-h-[44px] px-3">Link</button>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="phone" aria-hidden="true" class="lucide lucide-phone w-5 h-5 text-violet-600 flex-shrink-0"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs opacity-60">Phone Number</p>
+            <div class="flex items-center gap-2 flex-wrap">
+              <p class="font-medium text-sm truncate" id="profile-phone">+880 1812-345678</p>
+              <span id="phone-verified-status" class="text-xs verified-badge text-white px-2 py-0.5 rounded-full flex-shrink-0">Verified</span>
+            </div>
+          </div>
+          <button id="link-phone-btn" class="hidden p-2 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg text-xs text-violet-600 min-h-[44px] px-3">Link</button>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="at-sign" aria-hidden="true" class="lucide lucide-at-sign w-5 h-5 text-violet-600 flex-shrink-0"><circle cx="12" cy="12" r="4"></circle><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"></path></svg>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs opacity-60">Username / ইউজারনেম</p>
+            <p class="font-medium text-sm truncate" id="profile-username">@ayesha_khan</p>
+          </div>
+          <button id="copy-username-btn" class="p-2 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg min-h-[44px] min-w-[44px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="copy" aria-hidden="true" class="lucide lucide-copy w-4 h-4"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+          </button>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="fingerprint" aria-hidden="true" class="lucide lucide-fingerprint w-5 h-5 text-violet-600 flex-shrink-0"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"></path><path d="M14 13.12c0 2.38 0 6.38-1 8.88"></path><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"></path><path d="M2 12a10 10 0 0 1 18-6"></path><path d="M2 16h.01"></path><path d="M21.8 16c.2-2 .131-5.354 0-6"></path><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"></path><path d="M8.65 22c.21-.66.45-1.32.57-2"></path><path d="M9 6.8a6 6 0 0 1 9 5.2v2"></path></svg>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs opacity-60">User ID</p>
+            <p class="font-medium text-sm font-mono truncate" id="profile-userid">U12345678</p>
+          </div>
+          <button id="copy-userid-btn" class="p-2 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg min-h-[44px] min-w-[44px]">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="copy" aria-hidden="true" class="lucide lucide-copy w-4 h-4"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+          </button>
+        </div>
+        <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="badge-check" aria-hidden="true" class="lucide lucide-badge-check w-5 h-5 text-violet-600 flex-shrink-0"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs opacity-60">Verification Status</p>
+            <p class="font-medium text-sm" id="profile-verification-status">Email &amp; Phone Verified</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="guest-upgrade-section" class="hidden border-t border-gray-200 dark:border-slate-700 pt-4 mb-4">
+        <div class="p-4 bg-gradient-to-r from-violet-50 to-fuchsia-50 dark:from-violet-950/30 dark:to-fuchsia-950/30 rounded-xl border border-violet-200 dark:border-violet-900/50">
+          <div class="flex items-start gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="unlock" aria-hidden="true" class="lucide lucide-unlock w-5 h-5 text-violet-600 flex-shrink-0 mt-0.5"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
+            <div class="flex-1">
+              <h4 class="font-semibold text-sm mb-1">Unlock Full Features</h4>
+              <p class="text-xs opacity-70 mb-3">Verify your phone or email to send messages, make calls, and share files</p>
+              <button id="verify-from-profile-btn" class="text-xs text-violet-600 dark:text-violet-400 font-semibold hover:underline min-h-[44px] px-2">
+                Verify Now to Start Chatting →
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-gray-200 dark:border-slate-700 pt-4">
+        <h4 class="font-semibold text-sm mb-3">Share Profile / প্রোফাইল শেয়ার করুন</h4>
+        <div id="qr-code-container" class="bg-gray-50 dark:bg-slate-800 p-4 rounded-xl flex flex-col items-center">
+          <canvas id="qr-canvas" class="mb-2"></canvas>
+          <p class="text-xs opacity-70">Scan to chat with me</p>
+        </div>
+        <button id="share-profile-btn" class="w-full mt-3 py-2.5 bg-violet-50 dark:bg-slate-800 text-violet-600 rounded-xl font-medium hover:bg-violet-100 dark:hover:bg-slate-700 transition flex items-center justify-center gap-2 min-h-[44px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="share-2" aria-hidden="true" class="lucide lucide-share-2 w-4 h-4"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"></line><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"></line></svg>
+          Share Profile Link
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Link Email/Phone Modal -->
+<div id="link-contact-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-bold" id="link-modal-title">Link Email</h3>
+        <button id="close-link-modal" class="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg min-h-[44px] min-w-[44px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+      
+      <div id="link-input-section">
+        <div id="link-email-section" class="hidden">
+          <label class="text-sm font-medium mb-2 block">Email Address</label>
+          <input id="link-email-input" type="email" inputmode="email" placeholder="your@email.com" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition mb-2 text-base min-h-[44px]">
+          <p id="link-email-error" class="text-xs text-red-500 mb-4 hidden"></p>
+          <p class="text-xs opacity-60 mb-4">Demo OTP: 888888</p>
+        </div>
+        <div id="link-phone-section" class="hidden">
+          <label class="text-sm font-medium mb-2 block">Phone Number</label>
+          <div class="flex gap-2 mb-2">
+            <select id="link-country-code" class="px-3 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition text-base min-h-[44px]">
+              <option value="+880">🇧🇩 +880</option>
+              <option value="+1">🇺🇸 +1</option>
+              <option value="+91">🇮🇳 +91</option>
+            </select>
+            <input id="link-phone-input" type="tel" inputmode="numeric" pattern="[0-9]*" placeholder="1712345678" class="flex-1 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition text-base min-h-[44px]">
+          </div>
+          <p id="link-phone-error" class="text-xs text-red-500 mb-4 hidden"></p>
+          <p class="text-xs opacity-60 mb-4">Demo OTP: 999999</p>
+        </div>
+        <button id="send-link-otp-btn" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition flex items-center justify-center gap-2 min-h-[44px]">
+          <span id="send-link-otp-text">Send Verification Code</span>
+          <div id="send-link-otp-loader" class="loader hidden"></div>
+        </button>
+      </div>
+
+      <div id="link-otp-section" class="hidden">
+        <p class="text-sm opacity-70 mb-4 text-center">Enter the 6-digit code sent to <span id="link-contact-display" class="font-semibold"></span></p>
+        <div class="otp-input link-otp-input flex justify-center gap-2 mb-4">
+          <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="0">
+          <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="1">
+          <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="2">
+          <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="3">
+          <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="4">
+          <input type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none transition" data-index="5">
+        </div>
+        <p id="link-otp-error" class="text-xs text-red-500 text-center mb-4 hidden"></p>
+        <button id="verify-link-otp-btn" class="w-full bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition flex items-center justify-center gap-2 min-h-[44px]">
+          <span id="verify-link-otp-text">Verify &amp; Link</span>
+          <div id="verify-link-otp-loader" class="loader hidden"></div>
+        </button>
+        <button id="back-to-link-input" class="w-full mt-2 py-2 text-sm opacity-70 hover:opacity-100 transition min-h-[44px]">Change contact info</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Panel Modal -->
+<div id="admin-panel-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
+    <div class="bg-gradient-to-r from-red-600 to-orange-600 p-6 text-white">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="shield" aria-hidden="true" class="lucide lucide-shield w-6 h-6"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>
+          </div>
+          <div>
+            <h2 class="text-2xl font-bold">Admin Panel</h2>
+            <p class="text-sm opacity-90">User Verification Management</p>
+          </div>
+        </div>
+        <button id="close-admin-panel" class="p-2 hover:bg-white/20 rounded-lg min-h-[44px] min-w-[44px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-6 h-6"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-6">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div class="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl">
+          <div class="flex items-center justify-between mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="users" aria-hidden="true" class="lucide lucide-users w-5 h-5 text-blue-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>
+            <span class="text-xs font-semibold text-blue-600">TOTAL</span>
+          </div>
+          <p class="text-2xl font-bold" id="admin-stat-total">4</p>
+          <p class="text-xs opacity-70">Total Users</p>
+        </div>
+        <div class="bg-green-50 dark:bg-green-950/30 p-4 rounded-xl">
+          <div class="flex items-center justify-between mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="badge-check" aria-hidden="true" class="lucide lucide-badge-check w-5 h-5 text-green-600"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg>
+            <span class="text-xs font-semibold text-green-600">VERIFIED</span>
+          </div>
+          <p class="text-2xl font-bold" id="admin-stat-verified">2</p>
+          <p class="text-xs opacity-70">Admin Verified</p>
+        </div>
+        <div class="bg-amber-50 dark:bg-amber-950/30 p-4 rounded-xl">
+          <div class="flex items-center justify-between mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="mail" aria-hidden="true" class="lucide lucide-mail w-5 h-5 text-amber-600"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
+            <span class="text-xs font-semibold text-amber-600">EMAIL</span>
+          </div>
+          <p class="text-2xl font-bold" id="admin-stat-email">2</p>
+          <p class="text-xs opacity-70">Email Verified</p>
+        </div>
+        <div class="bg-purple-50 dark:bg-purple-950/30 p-4 rounded-xl">
+          <div class="flex items-center justify-between mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="phone" aria-hidden="true" class="lucide lucide-phone w-5 h-5 text-purple-600"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"></path></svg>
+            <span class="text-xs font-semibold text-purple-600">PHONE</span>
+          </div>
+          <p class="text-2xl font-bold" id="admin-stat-phone">3</p>
+          <p class="text-xs opacity-70">Phone Verified</p>
+        </div>
+        <div class="bg-gray-50 dark:bg-gray-800/30 p-4 rounded-xl">
+          <div class="flex items-center justify-between mb-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="eye" aria-hidden="true" class="lucide lucide-eye w-5 h-5 text-gray-600"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span class="text-xs font-semibold text-gray-600">GUEST</span>
+          </div>
+          <p class="text-2xl font-bold" id="admin-stat-guest">0</p>
+          <p class="text-xs opacity-70">Google Guest</p>
+        </div>
+      </div>
+
+      <div class="flex flex-col md:flex-row gap-3 mb-6">
+        <div class="flex-1 relative">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="search" aria-hidden="true" class="lucide lucide-search w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 opacity-50"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg>
+          <input id="admin-search-input" type="text" inputmode="search" placeholder="Search by name, @username, email, or phone..." class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-violet-500 text-base min-h-[44px]">
+        </div>
+        <select id="admin-filter-status" class="px-4 py-3 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-violet-500 text-base min-h-[44px]">
+          <option value="all">All Users</option>
+          <option value="admin_verified">Admin Verified</option>
+          <option value="email_verified">Email Verified</option>
+          <option value="phone_verified">Phone Verified</option>
+          <option value="google_guest">Google Guest</option>
+          <option value="unverified">Unverified</option>
+        </select>
+      </div>
+
+      <div class="bg-gray-50 dark:bg-slate-800 rounded-xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-100 dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700">
+              <tr>
+                <th class="text-left py-3 px-4 font-semibold">User</th>
+                <th class="text-left py-3 px-4 font-semibold">Contact</th>
+                <th class="text-left py-3 px-4 font-semibold">Status</th>
+                <th class="text-left py-3 px-4 font-semibold">Verified Date</th>
+                <th class="text-center py-3 px-4 font-semibold">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-user-list" class="divide-y divide-gray-200 dark:divide-slate-700">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Verification Management Modal -->
+<div id="verification-management-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-bold flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="badge-check" aria-hidden="true" class="lucide lucide-badge-check w-6 h-6 text-blue-600"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"></path><path d="m9 12 2 2 4-4"></path></svg>
+          Manage Verification
+        </h3>
+        <button id="close-verification-management" class="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg min-h-[44px] min-w-[44px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+      
+      <div class="mb-6">
+        <div class="flex items-center gap-3 mb-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+          <img id="verify-user-avatar" src="https://i.pravatar.cc/100?img=1" class="w-12 h-12 rounded-full">
+          <div class="flex-1">
+            <p class="font-semibold" id="verify-user-name">User Name</p>
+            <p class="text-sm opacity-70" id="verify-user-username">@username</p>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="text-sm font-medium mb-2 block">Verification Status</label>
+            <select id="verify-status-select" class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none text-base min-h-[44px]">
+              <option value="unverified">Unverified</option>
+              <option value="email_verified">Email Verified</option>
+              <option value="phone_verified">Phone Verified</option>
+              <option value="both_verified">Phone &amp; Email Verified</option>
+              <option value="admin_verified">Admin Verified ⭐</option>
+              <option value="google_guest">Google Guest 👁️</option>
+            </select>
+          </div>
+
+          <div id="verify-reason-section" class="hidden">
+            <label class="text-sm font-medium mb-2 block">Verification Reason / Note</label>
+            <textarea id="verify-reason-input" placeholder="e.g., Celebrity, Public Figure, Official Account..." class="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white/50 dark:bg-slate-800/50 focus:ring-2 focus:ring-violet-500 outline-none resize-none text-base" rows="3"></textarea>
+            <p class="text-xs opacity-60 mt-1">This note is for admin reference only</p>
+          </div>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 p-3 rounded-xl">
+            <p class="text-xs opacity-70">Current Status: <span id="verify-current-status" class="font-semibold">Unverified</span></p>
+            <p class="text-xs opacity-70 mt-1" id="verify-current-date"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button id="save-verification-btn" class="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition flex items-center justify-center gap-2 min-h-[44px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="save" aria-hidden="true" class="lucide lucide-save w-4 h-4"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"></path><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"></path><path d="M7 3v4a1 1 0 0 0 1 1h7"></path></svg>
+          Save Changes
+        </button>
+        <button id="cancel-verification-btn" class="px-6 py-3 border border-gray-300 dark:border-slate-700 rounded-xl font-semibold hover:bg-gray-50 dark:hover:bg-slate-800 transition min-h-[44px]">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="settings-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide shadow-2xl">
+    <div class="sticky top-0 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 p-6 z-10">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold">Settings / সেটিংস</h2>
+        <button id="close-settings" class="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg min-h-[44px] min-w-[44px]">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="p-6">
+      <!-- Privacy Section -->
+      <div class="mb-8">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="shield" aria-hidden="true" class="lucide lucide-shield w-5 h-5 text-violet-600"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path></svg>
+          Privacy / গোপনীয়তা
+        </h3>
+        
+        <div class="space-y-4">
+          <div class="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <h4 class="font-medium text-sm mb-1">Who can find me by phone number</h4>
+                <p class="text-xs opacity-70">কে আমার ফোন নম্বর দিয়ে খুঁজে পাবে</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="privacy-phone" checked="">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <select id="privacy-phone-level" class="w-full mt-2 px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 outline-none min-h-[44px]">
+              <option value="everyone">Everyone / সবাই</option>
+              <option value="contacts">My Contacts / আমার কন্টাক্ট</option>
+              <option value="nobody">Nobody / কেউ না</option>
+            </select>
+          </div>
+
+          <div class="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <h4 class="font-medium text-sm mb-1">Who can find me by email</h4>
+                <p class="text-xs opacity-70">কে আমার ইমেইল দিয়ে খুঁজে পাবে</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="privacy-email">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <select id="privacy-email-level" class="w-full mt-2 px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 outline-none min-h-[44px]">
+              <option value="everyone">Everyone / সবাই</option>
+              <option value="contacts">My Contacts / আমার কন্টাক্ট</option>
+              <option value="nobody">Nobody / কেউ না</option>
+            </select>
+          </div>
+
+          <div class="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <h4 class="font-medium text-sm mb-1">Who can find me by username</h4>
+                <p class="text-xs opacity-70">কে আমার ইউজারনেম দিয়ে খুঁজে পাবে</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="privacy-username" checked="">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <select id="privacy-username-level" class="w-full mt-2 px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 outline-none min-h-[44px]">
+              <option value="everyone">Everyone / সবাই</option>
+              <option value="contacts">My Contacts / আমার কন্টাক্ট</option>
+              <option value="nobody">Nobody / কেউ না</option>
+            </select>
+          </div>
+
+          <div class="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+            <div class="flex items-start justify-between mb-2">
+              <div class="flex-1">
+                <h4 class="font-medium text-sm mb-1">Who can find me by User ID</h4>
+                <p class="text-xs opacity-70">কে আমার ইউজার আইডি দিয়ে খুঁজে পাবে</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="privacy-userid">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <select id="privacy-userid-level" class="w-full mt-2 px-3 py-2 text-sm rounded-lg bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 outline-none min-h-[44px]">
+              <option value="everyone">Everyone / সবাই</option>
+              <option value="contacts">My Contacts / আমার কন্টাক্ট</option>
+              <option value="nobody">Nobody / কেউ না</option>
+            </select>
+          </div>
+
+          <div class="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <h4 class="font-medium text-sm mb-1">Last Seen &amp; Online Status</h4>
+                <p class="text-xs opacity-70">শেষ দেখা এবং অনলাইন স্ট্যাটাস</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="privacy-lastseen" checked="">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="p-4 bg-gray-50 dark:bg-slate-800 rounded-xl">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <h4 class="font-medium text-sm mb-1">Read Receipts / রিড রিসিপ্ট</h4>
+                <p class="text-xs opacity-70">Show when you've read messages</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="privacy-readreceipts" checked="">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Section -->
+      <div class="mb-8">
+        <h3 class="font-semibold text-lg mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="user" aria-hidden="true" class="lucide lucide-user w-5 h-5 text-violet-600"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          Account / অ্যাকাউন্ট
+        </h3>
+        
+        <div class="space-y-3">
+          <button class="w-full text-left p-4 bg-gray-50 dark:bg-slate-800 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition flex items-center justify-between min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="key" aria-hidden="true" class="lucide lucide-key w-5 h-5 text-violet-600"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"></path><path d="m21 2-9.6 9.6"></path><circle cx="7.5" cy="15.5" r="5.5"></circle></svg>
+              <span class="text-sm font-medium">Change Password</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="chevron-right" aria-hidden="true" class="lucide lucide-chevron-right w-5 h-5 opacity-50"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+          <button id="link-new-phone-btn" class="w-full text-left p-4 bg-gray-50 dark:bg-slate-800 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition flex items-center justify-between min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="smartphone" aria-hidden="true" class="lucide lucide-smartphone w-5 h-5 text-violet-600"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg>
+              <span class="text-sm font-medium">Change Phone Number</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="chevron-right" aria-hidden="true" class="lucide lucide-chevron-right w-5 h-5 opacity-50"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+          <button id="link-new-email-btn" class="w-full text-left p-4 bg-gray-50 dark:bg-slate-800 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition flex items-center justify-between min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="mail" aria-hidden="true" class="lucide lucide-mail w-5 h-5 text-violet-600"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg>
+              <span class="text-sm font-medium">Link Email Address</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="chevron-right" aria-hidden="true" class="lucide lucide-chevron-right w-5 h-5 opacity-50"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+          <button class="w-full text-left p-4 bg-gray-50 dark:bg-slate-800 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition flex items-center justify-between min-h-[44px]">
+            <div class="flex items-center gap-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="at-sign" aria-hidden="true" class="lucide lucide-at-sign w-5 h-5 text-violet-600"><circle cx="12" cy="12" r="4"></circle><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"></path></svg>
+              <span class="text-sm font-medium">Change Username</span>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="chevron-right" aria-hidden="true" class="lucide lucide-chevron-right w-5 h-5 opacity-50"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Pro Features Note -->
+      <div class="p-4 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-xl border border-amber-200 dark:border-amber-900/50">
+        <div class="flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="crown" aria-hidden="true" class="lucide lucide-crown w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"></path><path d="M5 21h14"></path></svg>
+          <div>
+            <h4 class="font-semibold text-sm mb-1">Unlock More Privacy Controls</h4>
+            <p class="text-xs opacity-70 mb-3">Get advanced privacy features with Chatly Pro: hide profile photo, custom online status, and more</p>
+            <button class="text-xs text-amber-600 dark:text-amber-400 font-semibold hover:underline min-h-[44px] px-2">Upgrade to Pro →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Story Viewer Modal -->
+<div id="story-modal" class="hidden fixed inset-0 bg-black/90 z-50 flex items-center justify-center">
+  <button id="close-story" class="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition z-10 min-h-[44px] min-w-[44px]">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-6 h-6 text-white"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+  </button>
+  <div class="relative w-full max-w-md h-[80vh] bg-slate-900 rounded-2xl overflow-hidden">
+    <div class="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/70 to-transparent z-10">
+      <div class="flex gap-1 mb-3">
+        <div class="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+          <div class="h-full bg-white w-full"></div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <img src="https://i.pravatar.cc/100?img=33" class="w-10 h-10 rounded-full border-2 border-white">
+        <div>
+          <p class="text-white font-semibold text-sm flex items-center gap-1">
+            Rahul Ahmed
+            <span class="verified-check !w-4 !h-4"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-2.5 h-2.5"><path d="M20 6 9 17l-5-5"></path></svg></span>
+          </p>
+          <p class="text-white/70 text-xs">2 hours ago</p>
+        </div>
+      </div>
+    </div>
+    <img src="https://picsum.photos/400/700" class="w-full h-full object-cover" alt="story">
+  </div>
+</div>
+
+<!-- Call Modal -->
+<div id="call-modal" class="hidden fixed inset-0 call-bg z-50 flex items-center justify-center p-4">
+  <div class="text-center text-white">
+    <div class="relative mb-8">
+      <img src="https://i.pravatar.cc/200?img=33" class="w-32 h-32 rounded-full mx-auto ring-4 ring-white/20 pulse-ring">
+    </div>
+    <h3 class="text-2xl font-bold mb-2 flex items-center justify-center gap-2">
+      Rahul Ahmed
+      <span class="verified-check"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-3 h-3"><path d="M20 6 9 17l-5-5"></path></svg></span>
+    </h3>
+    <p class="opacity-70 mb-12" id="call-status">Calling... / কল হচ্ছে...</p>
+    <div class="flex items-center justify-center gap-6">
+      <button class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition min-h-[56px] min-w-[56px]">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="mic-off" aria-hidden="true" class="lucide lucide-mic-off w-6 h-6"><path d="M12 19v3"></path><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"></path><path d="M16.95 16.95A7 7 0 0 1 5 12v-2"></path><path d="M18.89 13.23A7 7 0 0 0 19 12v-2"></path><path d="m2 2 20 20"></path><path d="M9 9v3a3 3 0 0 0 5.12 2.12"></path></svg>
+      </button>
+      <button id="end-call-btn" class="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center hover:bg-red-600 transition min-h-[64px] min-w-[64px]">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="phone-off" aria-hidden="true" class="lucide lucide-phone-off w-7 h-7"><path d="M10.1 13.9a14 14 0 0 0 3.732 2.668 1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2 18 18 0 0 1-12.728-5.272"></path><path d="M22 2 2 22"></path><path d="M4.76 13.582A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 .244.473"></path></svg>
+      </button>
+      <button class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition min-h-[56px] min-w-[56px]">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="video-off" aria-hidden="true" class="lucide lucide-video-off w-6 h-6"><path d="M10.66 6H14a2 2 0 0 1 2 2v2.5l5.248-3.062A.5.5 0 0 1 22 7.87v8.196"></path><path d="M16 16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h2"></path><path d="m2 2 20 20"></path></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Pro Plan Modal -->
+<div id="pro-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-y-auto scrollbar-hide shadow-2xl">
+    <div class="relative">
+      <button id="close-pro" class="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg z-10 min-h-[44px] min-w-[44px]">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="x" aria-hidden="true" class="lucide lucide-x w-5 h-5"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+      </button>
+      
+      <!-- Pro Header -->
+      <div class="pro-gradient p-8 rounded-t-3xl text-white text-center">
+        <div class="w-16 h-16 bg-white/20 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="crown" aria-hidden="true" class="lucide lucide-crown w-8 h-8"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"></path><path d="M5 21h14"></path></svg>
+        </div>
+        <h2 class="text-3xl font-bold mb-2">Upgrade to Chatly Pro</h2>
+        <p class="opacity-90">Unlock premium features / প্রিমিয়াম ফিচার আনলক করুন</p>
+      </div>
+
+      <div class="p-6 md:p-8">
+        <!-- Comparison Table -->
+        <div class="overflow-x-auto mb-8">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-slate-700">
+                <th class="text-left py-4 px-4 font-semibold">Features / ফিচার</th>
+                <th class="text-center py-4 px-4">Free</th>
+                <th class="text-center py-4 px-4">
+                  <span class="pro-gradient text-white px-4 py-1 rounded-full text-xs font-semibold">PRO</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b border-gray-100 dark:border-slate-800">
+                <td class="py-3 px-4">Custom Themes / কাস্টম থিম</td>
+                <td class="text-center py-3">Basic</td>
+                <td class="text-center py-3 text-violet-600 font-semibold">Unlimited ✓</td>
+              </tr>
+              <tr class="border-b border-gray-100 dark:border-slate-800">
+                <td class="py-3 px-4">Message Scheduling / মেসেজ শিডিউল</td>
+                <td class="text-center py-3 opacity-50">✗</td>
+                <td class="text-center py-3 text-violet-600 font-semibold">✓</td>
+              </tr>
+              <tr class="border-b border-gray-100 dark:border-slate-800">
+                <td class="py-3 px-4">AI Assistant / AI সহকারী</td>
+                <td class="text-center py-3 opacity-50">✗</td>
+                <td class="text-center py-3 text-violet-600 font-semibold">✓</td>
+              </tr>
+              <tr class="border-b border-gray-100 dark:border-slate-800">
+                <td class="py-3 px-4">Advanced Privacy Controls</td>
+                <td class="text-center py-3 opacity-50">✗</td>
+                <td class="text-center py-3 text-violet-600 font-semibold">✓</td>
+              </tr>
+              <tr class="border-b border-gray-100 dark:border-slate-800">
+                <td class="py-3 px-4">Disappearing Messages</td>
+                <td class="text-center py-3">24h</td>
+                <td class="text-center py-3 text-violet-600 font-semibold">Custom ✓</td>
+              </tr>
+              <tr class="border-b border-gray-100 dark:border-slate-800">
+                <td class="py-3 px-4">Cloud Backup / ক্লাউড ব্যাকআপ</td>
+                <td class="text-center py-3">1GB</td>
+                <td class="text-center py-3 text-violet-600 font-semibold">100GB ✓</td>
+              </tr>
+              <tr>
+                <td class="py-3 px-4">Verified Badge / ভেরিফাইড ব্যাজ</td>
+                <td class="text-center py-3 opacity-50">✗</td>
+                <td class="text-center py-3 text-violet-600 font-semibold">Admin Only</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pricing Cards -->
+        <div class="grid md:grid-cols-2 gap-4 mb-6">
+          <div class="border-2 border-gray-200 dark:border-slate-700 rounded-2xl p-6 hover:border-violet-500 transition cursor-pointer">
+            <h4 class="font-semibold mb-2">Monthly</h4>
+            <div class="flex items-baseline gap-1 mb-4">
+              <span class="text-3xl font-bold">$4.99</span>
+              <span class="opacity-60">/month</span>
+            </div>
+            <ul class="space-y-2 text-sm mb-6">
+              <li class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-4 h-4 text-violet-600"><path d="M20 6 9 17l-5-5"></path></svg>All Pro features</li>
+              <li class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-4 h-4 text-violet-600"><path d="M20 6 9 17l-5-5"></path></svg>Cancel anytime</li>
+            </ul>
+            <button class="w-full py-3 border-2 border-violet-600 text-violet-600 rounded-xl font-semibold hover:bg-violet-50 dark:hover:bg-slate-800 transition min-h-[44px]">
+              Choose Monthly
+            </button>
+          </div>
+
+          <div class="border-2 border-violet-600 rounded-2xl p-6 relative bg-violet-50/50 dark:bg-violet-950/20">
+            <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-600 text-white text-xs px-3 py-1 rounded-full font-semibold">
+              SAVE 40%
+            </div>
+            <h4 class="font-semibold mb-2">Yearly</h4>
+            <div class="flex items-baseline gap-1 mb-1">
+              <span class="text-3xl font-bold">$35.99</span>
+              <span class="opacity-60">/year</span>
+            </div>
+            <p class="text-xs text-violet-600 mb-4">$2.99/month billed annually</p>
+            <ul class="space-y-2 text-sm mb-6">
+              <li class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-4 h-4 text-violet-600"><path d="M20 6 9 17l-5-5"></path></svg>All Pro features</li>
+              <li class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-4 h-4 text-violet-600"><path d="M20 6 9 17l-5-5"></path></svg>Priority support</li>
+              <li class="flex items-center gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="check" aria-hidden="true" class="lucide lucide-check w-4 h-4 text-violet-600"><path d="M20 6 9 17l-5-5"></path></svg>2 months free</li>
+            </ul>
+            <button class="w-full py-3 bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-xl font-semibold hover:shadow-lg hover:scale-[1.02] transition min-h-[44px]">
+              Choose Yearly
+            </button>
+          </div>
+        </div>
+
+        <p class="text-xs text-center opacity-60">Secure payment • Cancel anytime • 7-day money back guarantee</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+lucide.createIcons();
+
+// Admin URL Access Control
+const ADMIN_PASSWORD = 'ADMIN123';
+let isAdminSession = false;
+let adminAccessRequested = false;
+let isGoogleGuestUser = false;
+
+function checkAdminURLParam() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const adminParam = urlParams.get('admin');
+  
+  if (adminParam === '1') {
+    adminAccessRequested = true;
+    const storedAdminSession = sessionStorage.getItem('chatly_admin_session');
+    if (storedAdminSession === 'authenticated') {
+      isAdminSession = true;
+      currentUser.isAdmin = true;
+      showToast('Admin session restored', 'success');
+    } else {
+      setTimeout(() => {
+        document.getElementById('admin-login-modal').classList.remove('hidden');
+        document.getElementById('admin-password-input').focus();
+      }, 500);
+    }
+  }
+}
+
+function authenticateAdmin(password) {
+  const errorEl = document.getElementById('admin-password-error');
+  const btn = document.getElementById('admin-auth-btn');
+  const btnText = document.getElementById('admin-auth-text');
+  const btnLoader = document.getElementById('admin-auth-loader');
+  
+  errorEl.classList.add('hidden');
+  
+  if (!password) {
+    errorEl.textContent = 'Please enter admin password';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  btnLoader.classList.remove('hidden');
+  
+  setTimeout(() => {
+    if (password === ADMIN_PASSWORD) {
+      isAdminSession = true;
+      currentUser.isAdmin = true;
+      sessionStorage.setItem('chatly_admin_session', 'authenticated');
+      document.getElementById('admin-login-modal').classList.add('hidden');
+      showToast('Admin access granted successfully!', 'success');
+      updateUserDisplay();
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    } else {
+      errorEl.textContent = 'Invalid admin password. Access denied.';
+      errorEl.classList.remove('hidden');
+      showToast('Authentication failed', 'error');
+      document.getElementById('admin-password-input').value = '';
+      document.getElementById('admin-password-input').focus();
+    }
+    
+    btn.disabled = false;
+    btnText.classList.remove('hidden');
+    btnLoader.classList.add('hidden');
+  }, 1000);
+}
+
+document.getElementById('admin-auth-btn').addEventListener('click', () => {
+  authenticateAdmin(document.getElementById('admin-password-input').value);
+});
+
+document.getElementById('admin-password-input').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    authenticateAdmin(document.getElementById('admin-password-input').value);
+  }
+});
+
+document.getElementById('admin-cancel-btn').addEventListener('click', () => {
+  document.getElementById('admin-login-modal').classList.add('hidden');
+  document.getElementById('admin-password-input').value = '';
+  window.history.replaceState({}, document.title, window.location.pathname);
+  showToast('Admin access cancelled', 'info');
+});
+
+document.getElementById('admin-logout-btn').addEventListener('click', () => {
+  if (confirm('Are you sure you want to logout from Admin Panel?')) {
+    isAdminSession = false;
+    currentUser.isAdmin = false;
+    sessionStorage.removeItem('chatly_admin_session');
+    updateUserDisplay();
+    showToast('Admin session ended', 'info');
+  }
+});
+
+function showAdminAccessWarning() {
+  showToast('⚠️ Admin access denied. URL parameter detected without authentication.', 'warning');
+}
+
+// Toast System
+function showToast(message, type = 'info') {
+  const colors = {
+    success: 'bg-green-500',
+    error: 'bg-red-500',
+    info: 'bg-violet-600',
+    warning: 'bg-amber-500'
+  };
+  const icons = {
+    success: 'check-circle',
+    error: 'x-circle',
+    info: 'info',
+    warning: 'alert-triangle'
+  };
+  
+  const toast = document.createElement('div');
+  toast.className = `toast ${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 min-w-[280px] max-w-md`;
+  toast.innerHTML = `
+    <i data-lucide="${icons[type]}" class="w-5 h-5 flex-shrink-0"></i>
+    <span class="text-sm font-medium">${message}</span>
+  `;
+  document.getElementById('toast-container').appendChild(toast);
+  lucide.createIcons();
+  
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-20px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+// Google Sign-In
+function handleGoogleSignIn(response) {
+  const credential = response.credential;
+  const payload = JSON.parse(atob(credential.split('.')[1]));
+  
+  isGoogleGuestUser = true;
+  currentUser = {
+    id: 'G' + Date.now().toString().slice(-8),
+    name: payload.name || 'Google User',
+    username: (payload.email?.split('@')[0] || 'guest') + '_' + Date.now().toString().slice(-4),
+    email: payload.email || '',
+    phone: null,
+    avatar: payload.picture || 'https://i.pravatar.cc/100?img=5',
+    status: 'Google Guest User',
+    phoneVerified: false,
+    emailVerified: false,
+    adminVerified: false,
+    verificationStatus: 'google_guest',
+    verificationNote: 'Google OAuth - View Only Mode',
+    verificationDate: null,
+    isPro: false,
+    isAdmin: false
+  };
+  
+  updateUserDisplay();
+  enableGuestMode();
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+  showToast('Signed in with Google. Verify phone/email for full access!', 'info');
+}
+
+document.getElementById('google-signin-btn').addEventListener('click', () => {
+  google.accounts.id.initialize({
+    client_id: 'demo-client-id.apps.googleusercontent.com',
+    callback: handleGoogleSignIn,
+    auto_select: false
+  });
+  google.accounts.id.prompt();
+});
+
+function enableGuestMode() {
+  document.getElementById('view-only-banner').classList.remove('hidden');
+  document.getElementById('message-input').disabled = true;
+  document.getElementById('message-input').placeholder = 'Verify phone or email to send messages';
+  document.getElementById('guest-input-overlay').classList.remove('hidden');
+  
+  document.querySelectorAll('.guest-action-btn').forEach(btn => {
+    btn.classList.add('guest-restricted');
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showToast('Verify phone or email to use this feature', 'warning');
+    }, true);
+  });
+}
+
+function disableGuestMode() {
+  isGoogleGuestUser = false;
+  document.getElementById('view-only-banner').classList.add('hidden');
+  document.getElementById('message-input').disabled = false;
+  document.getElementById('message-input').placeholder = 'Type a message / মেসেজ লিখুন...';
+  document.getElementById('guest-input-overlay').classList.add('hidden');
+  
+  document.querySelectorAll('.guest-action-btn').forEach(btn => {
+    btn.classList.remove('guest-restricted');
+  });
+}
+
+document.getElementById('upgrade-from-banner-btn').addEventListener('click', () => {
+  document.getElementById('profile-modal').classList.remove('hidden');
+});
+
+document.getElementById('guest-upgrade-btn').addEventListener('click', () => {
+  document.getElementById('link-contact-modal').classList.remove('hidden');
+  openLinkModal('email');
+});
+
+document.getElementById('verify-from-profile-btn').addEventListener('click', () => {
+  document.getElementById('profile-modal').classList.add('hidden');
+  document.getElementById('link-contact-modal').classList.remove('hidden');
+  openLinkModal('email');
+});
+
+// Mock User Database
+const mockUsers = [
+  {
+    id: 'U12345678',
+    phone: '+8801812345678',
+    email: 'ayesha@example.com',
+    username: 'ayesha_khan',
+    name: 'Ayesha Khan',
+    status: 'Hey there! I\'m using Chatly',
+    avatar: 'https://i.pravatar.cc/100?img=12',
+    phoneVerified: true,
+    emailVerified: true,
+    adminVerified: false,
+    verificationStatus: 'email_verified',
+    verificationNote: '',
+    verificationDate: null,
+    isPro: false,
+    isAdmin: false
+  },
+  {
+    id: 'U87654321',
+    phone: '+8801712345678',
+    email: 'rahul@example.com',
+    username: 'rahul_ahmed',
+    name: 'Rahul Ahmed',
+    status: 'Available',
+    avatar: 'https://i.pravatar.cc/100?img=33',
+    phoneVerified: true,
+    emailVerified: true,
+    adminVerified: true,
+    verificationStatus: 'admin_verified',
+    verificationNote: 'Public Figure - Verified Journalist',
+    verificationDate: '2024-01-15',
+    isPro: true,
+    isAdmin: false
+  },
+  {
+    id: 'U11223344',
+    phone: '+8801912345678',
+    email: 'fatima@example.com',
+    username: 'fatima_noor',
+    name: 'Fatima Noor',
+    status: 'Busy',
+    avatar: 'https://i.pravatar.cc/100?img=45',
+    phoneVerified: true,
+    emailVerified: false,
+    adminVerified: false,
+    verificationStatus: 'phone_verified',
+    verificationNote: '',
+    verificationDate: null,
+    isPro: false,
+    isAdmin: false
+  },
+  {
+    id: 'U99887766',
+    phone: '+8801612345678',
+    email: null,
+    username: 'techguru',
+    name: 'Tech Guru',
+    status: 'Tech Enthusiast',
+    avatar: 'https://i.pravatar.cc/100?img=20',
+    phoneVerified: false,
+    emailVerified: false,
+    adminVerified: true,
+    verificationStatus: 'admin_verified',
+    verificationNote: 'Official Chatly Support Account',
+    verificationDate: '2024-02-01',
+    isPro: true,
+    isAdmin: false
+  }
+];
+
+let currentUser = { ...mockUsers[0] };
+
+let otpState = {
+  code: null,
+  attempts: 0,
+  maxAttempts: 3,
+  timer: null,
+  resendCooldown: false,
+  fullContact: '',
+  authMethod: 'phone'
+};
+
+let linkOtpState = {
+  code: null,
+  attempts: 0,
+  maxAttempts: 3,
+  contact: '',
+  type: 'email'
+};
+
+// Theme Management
+let isDark = false;
+const body = document.getElementById('app-body');
+const themeToggles = [document.getElementById('theme-toggle'), document.getElementById('theme-toggle-login')];
+
+function toggleTheme() {
+  isDark = !isDark;
+  if (isDark) {
+    body.classList.remove('light');
+    body.classList.add('dark');
+    document.querySelectorAll('.moon-icon').forEach(i => i.classList.add('hidden'));
+    document.querySelectorAll('.sun-icon').forEach(i => i.classList.remove('hidden'));
+  } else {
+    body.classList.remove('dark');
+    body.classList.add('light');
+    document.querySelectorAll('.moon-icon').forEach(i => i.classList.remove('hidden'));
+    document.querySelectorAll('.sun-icon').forEach(i => i.classList.add('hidden'));
+  }
+  lucide.createIcons();
+  if (!document.getElementById('profile-modal').classList.contains('hidden')) {
+    generateQRCode();
+  }
+}
+
+themeToggles.forEach(btn => btn?.addEventListener('click', toggleTheme));
+
+// Auth Tab Switching
+document.getElementById('phone-tab').addEventListener('click', () => {
+  document.getElementById('phone-tab').classList.add('bg-white', 'dark:bg-slate-900', 'shadow-sm', 'text-violet-600');
+  document.getElementById('email-tab').classList.remove('bg-white', 'dark:bg-slate-900', 'shadow-sm', 'text-violet-600');
+  document.getElementById('email-tab').classList.add('opacity-60');
+  document.getElementById('phone-auth-section').classList.remove('hidden');
+  document.getElementById('email-auth-section').classList.add('hidden');
+});
+
+document.getElementById('email-tab').addEventListener('click', () => {
+  document.getElementById('email-tab').classList.add('bg-white', 'dark:bg-slate-900', 'shadow-sm', 'text-violet-600');
+  document.getElementById('phone-tab').classList.remove('bg-white', 'dark:bg-slate-900', 'shadow-sm', 'text-violet-600');
+  document.getElementById('phone-tab').classList.add('opacity-60');
+  document.getElementById('email-auth-section').classList.remove('hidden');
+  document.getElementById('phone-auth-section').classList.add('hidden');
+});
+
+function validatePhoneNumber(countryCode, phoneNumber) {
+  const cleaned = phoneNumber.replace(/[\s-\(\)]/g, '');
+  const patterns = {
+    '+880': /^1[3-9]\d{8}$/,
+    '+1': /^\d{10}$/,
+    '+91': /^[6-9]\d{9}$/,
+    '+44': /^7\d{9}$/,
+    '+971': /^5\d{8}$/,
+    '+65': /^[689]\d{7}$/
+  };
+  const pattern = patterns[countryCode];
+  if (!pattern) return { valid: false, message: 'Unsupported country code' };
+  if (!cleaned) return { valid: false, message: 'Phone number is required' };
+  if (!/^\d+$/.test(cleaned)) return { valid: false, message: 'Only digits allowed' };
+  if (!pattern.test(cleaned)) {
+    const msg = countryCode === '+880' ? 'Enter valid BD number: 1712345678 (11 digits starting with 1)' : 'Invalid phone number format';
+    return { valid: false, message: msg };
+  }
+  return { valid: true, cleaned };
+}
+
+function validateEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email) return { valid: false, message: 'Email is required' };
+  if (!emailRegex.test(email)) return { valid: false, message: 'Invalid email format' };
+  return { valid: true };
+}
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+function startResendTimer() {
+  let time = 30;
+  const timerEl = document.getElementById('resend-timer');
+  const resendBtn = document.getElementById('resend-otp');
+  otpState.resendCooldown = true;
+  resendBtn.disabled = true;
+  resendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+  
+  clearInterval(otpState.timer);
+  otpState.timer = setInterval(() => {
+    time--;
+    timerEl.textContent = `Resend available in ${time}s`;
+    if (time <= 0) {
+      clearInterval(otpState.timer);
+      timerEl.textContent = '';
+      resendBtn.disabled = false;
+      resendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+      otpState.resendCooldown = false;
+    }
+  }, 1000);
+}
+
+document.getElementById('phone-input').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/[^0-9]/g, '');
+  document.getElementById('phone-error').classList.add('hidden');
+});
+
+document.getElementById('send-otp-btn').addEventListener('click', async () => {
+  const phone = document.getElementById('phone-input').value.trim();
+  const countryCode = document.getElementById('country-code').value;
+  const errorEl = document.getElementById('phone-error');
+  const btn = document.getElementById('send-otp-btn');
+  const btnText = document.getElementById('send-otp-text');
+  const btnLoader = document.getElementById('send-otp-loader');
+  
+  errorEl.classList.add('hidden');
+  
+  const validation = validatePhoneNumber(countryCode, phone);
+  if (!validation.valid) {
+    errorEl.textContent = validation.message;
+    errorEl.classList.remove('hidden');
+    showToast(validation.message, 'error');
+    return;
+  }
+  
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  btnLoader.classList.remove('hidden');
+  
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  otpState.code = '999999';
+  otpState.attempts = 0;
+  otpState.fullContact = countryCode + ' ' + validation.cleaned;
+  otpState.authMethod = 'phone';
+  currentUser.phone = otpState.fullContact;
+  
+  console.log('[DEV] Demo OTP for ' + otpState.fullContact + ': 999999');
+  
+  document.getElementById('contact-display').textContent = otpState.fullContact;
+  document.getElementById('phone-login').classList.add('hidden');
+  document.getElementById('otp-screen').classList.remove('hidden');
+  
+  btn.disabled = false;
+  btnText.classList.remove('hidden');
+  btnLoader.classList.add('hidden');
+  
+  startResendTimer();
+  document.querySelector('.otp-input input').focus();
+  
+  showToast(`OTP sent to ${otpState.fullContact} (Demo: 999999)`, 'success');
+});
+
+document.getElementById('send-email-otp-btn').addEventListener('click', async () => {
+  const email = document.getElementById('email-input').value.trim();
+  const errorEl = document.getElementById('email-error');
+  const btn = document.getElementById('send-email-otp-btn');
+  const btnText = document.getElementById('send-email-otp-text');
+  const btnLoader = document.getElementById('send-email-otp-loader');
+  
+  errorEl.classList.add('hidden');
+  
+  const validation = validateEmail(email);
+  if (!validation.valid) {
+    errorEl.textContent = validation.message;
+    errorEl.classList.remove('hidden');
+    showToast(validation.message, 'error');
+    return;
+  }
+  
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  btnLoader.classList.remove('hidden');
+  
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  otpState.code = '888888';
+  otpState.attempts = 0;
+  otpState.fullContact = email;
+  otpState.authMethod = 'email';
+  
+  console.log('[DEV] Demo OTP for ' + email + ': 888888');
+  
+  document.getElementById('contact-display').textContent = email;
+  document.getElementById('phone-login').classList.add('hidden');
+  document.getElementById('otp-screen').classList.remove('hidden');
+  
+  btn.disabled = false;
+  btnText.classList.remove('hidden');
+  btnLoader.classList.add('hidden');
+  
+  startResendTimer();
+  document.querySelector('.otp-input input').focus();
+  
+  showToast(`Verification code sent to ${email} (Demo: 888888)`, 'success');
+});
+
+document.getElementById('magic-link-btn').addEventListener('click', () => {
+  const email = document.getElementById('email-input').value.trim();
+  const validation = validateEmail(email);
+  if (!validation.valid) {
+    showToast(validation.message, 'error');
+    return;
+  }
+  showToast(`Magic link sent to ${email}! Check your inbox.`, 'success');
+});
+
+document.getElementById('back-to-auth').addEventListener('click', () => {
+  document.getElementById('otp-screen').classList.add('hidden');
+  document.getElementById('phone-login').classList.remove('hidden');
+  clearInterval(otpState.timer);
+  otpInputs.forEach(input => {
+    input.value = '';
+    input.classList.remove('border-red-500', 'border-green-500');
+  });
+  document.getElementById('otp-error').classList.add('hidden');
+});
+
+const otpInputs = document.querySelectorAll('.otp-input input');
+
+if ('OTPCredential' in window) {
+  try {
+    navigator.credentials.get({ otp: { transport: ['sms'] } }).then(otp => {
+      if (otp && otp.code) {
+        const digits = otp.code.split('');
+        otpInputs.forEach((inp, i) => { inp.value = digits[i] || ''; });
+        document.getElementById('verify-otp-btn').click();
+      }
+    }).catch(() => {});
+  } catch (e) {}
+}
+
+otpInputs.forEach((input, index) => {
+  input.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    if (e.target.value && index < otpInputs.length - 1) {
+      otpInputs[index + 1].focus();
+    }
+    const otp = Array.from(otpInputs).map(i => i.value).join('');
+    if (otp.length === 6) {
+      setTimeout(() => document.getElementById('verify-otp-btn').click(), 300);
+    }
+    e.target.classList.remove('border-red-500');
+    document.getElementById('otp-error').classList.add('hidden');
+  });
+  
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+      otpInputs[index - 1].focus();
+    }
+    if (e.key === 'ArrowLeft' && index > 0) {
+      otpInputs[index - 1].focus();
+    }
+    if (e.key === 'ArrowRight' && index < otpInputs.length - 1) {
+      otpInputs[index + 1].focus();
+    }
+  });
+  
+  input.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const paste = (e.clipboardData || window.clipboardData).getData('text');
+    const digits = paste.replace(/[^0-9]/g, '').slice(0, 6).split('');
+    digits.forEach((digit, i) => {
+      if (otpInputs[i]) otpInputs[i].value = digit;
+    });
+    if (digits.length === 6) {
+      setTimeout(() => document.getElementById('verify-otp-btn').click(), 300);
+    } else if (digits.length > 0) {
+      otpInputs[Math.min(digits.length, otpInputs.length - 1)].focus();
+    }
+  });
+});
+
+document.getElementById('resend-otp').addEventListener('click', async () => {
+  if (otpState.resendCooldown) return;
+  if (otpState.attempts >= otpState.maxAttempts) {
+    showToast('Too many attempts. Please try again later.', 'error');
+    return;
+  }
+  
+  const btn = document.getElementById('resend-otp');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+  
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  otpState.code = otpState.authMethod === 'phone' ? '999999' : '888888';
+  console.log('[DEV] New Demo OTP: ' + otpState.code);
+  
+  otpInputs.forEach(input => {
+    input.value = '';
+    input.classList.remove('border-red-500', 'border-green-500');
+  });
+  document.getElementById('otp-error').classList.add('hidden');
+  
+  btn.textContent = 'Resend';
+  startResendTimer();
+  otpInputs[0].focus();
+  showToast(`New code sent (Demo: ${otpState.code})`, 'success');
+});
+
+document.getElementById('verify-otp-btn').addEventListener('click', async () => {
+  const otp = Array.from(otpInputs).map(i => i.value).join('');
+  const errorEl = document.getElementById('otp-error');
+  const btn = document.getElementById('verify-otp-btn');
+  const btnText = document.getElementById('verify-otp-text');
+  const btnLoader = document.getElementById('verify-otp-loader');
+  
+  if (otp.length !== 6) {
+    errorEl.textContent = 'Please enter complete 6-digit code';
+    errorEl.classList.remove('hidden');
+    otpInputs.forEach(input => input.classList.add('border-red-500'));
+    return;
+  }
+  
+  btn.disabled = true;
+  otpInputs.forEach(input => input.disabled = true);
+  btnText.classList.add('hidden');
+  btnLoader.classList.remove('hidden');
+  
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  if (otp === otpState.code) {
+    otpInputs.forEach(input => input.classList.add('border-green-500'));
+    if (otpState.authMethod === 'phone') {
+      currentUser.phoneVerified = true;
+      if (isGoogleGuestUser) disableGuestMode();
+      showToast('Phone number verified successfully!', 'success');
+    } else {
+      currentUser.email = otpState.fullContact;
+      currentUser.emailVerified = true;
+      if (isGoogleGuestUser) disableGuestMode();
+      showToast('Email verified successfully!', 'success');
+    }
+    clearInterval(otpState.timer);
+    
+    setTimeout(() => {
+      document.getElementById('otp-screen').classList.add('hidden');
+      document.getElementById('username-screen').classList.remove('hidden');
+    }, 500);
+  } else {
+    otpState.attempts++;
+    btn.disabled = false;
+    otpInputs.forEach(input => {
+      input.disabled = false;
+      input.classList.add('border-red-500');
+    });
+    btnText.classList.remove('hidden');
+    btnLoader.classList.add('hidden');
+    
+    if (otpState.attempts >= otpState.maxAttempts) {
+      errorEl.textContent = 'Too many wrong attempts. Please request a new code.';
+      showToast('Too many wrong attempts', 'error');
+      setTimeout(() => {
+        document.getElementById('back-to-auth').click();
+      }, 2000);
+    } else {
+      errorEl.textContent = `Invalid code. ${otpState.maxAttempts - otpState.attempts} attempts remaining.`;
+      errorEl.classList.remove('hidden');
+      showToast('Invalid code. Please try again.', 'error');
+      setTimeout(() => {
+        otpInputs.forEach(input => {
+          input.value = '';
+          input.classList.remove('border-red-500');
+        });
+        otpInputs[0].focus();
+      }, 500);
+    }
+  }
+});
+
+document.getElementById('username-input').addEventListener('input', (e) => {
+  const username = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '');
+  e.target.value = username;
+  const status = document.getElementById('username-status');
+  const existingUsers = ['admin', 'chatly', 'support', 'help'];
+  
+  if (username.length < 3) {
+    status.textContent = 'Username must be at least 3 characters';
+    status.className = 'text-xs mt-1 text-red-500';
+  } else if (existingUsers.includes(username)) {
+    status.textContent = 'Username not available';
+    status.className = 'text-xs mt-1 text-red-500';
+  } else {
+    status.textContent = '@' + username + ' is available ✓';
+    status.className = 'text-xs mt-1 text-green-500';
+  }
+});
+
+document.getElementById('complete-signup-btn').addEventListener('click', () => {
+  const name = document.getElementById('fullname-input').value.trim();
+  const username = document.getElementById('username-input').value.trim();
+  if (!name) {
+    showToast('Please enter your name', 'warning');
+    return;
+  }
+  if (username.length < 3) {
+    showToast('Please choose a valid username', 'warning');
+    return;
+  }
+  currentUser.name = name;
+  currentUser.username = username;
+  currentUser.id = 'U' + Date.now().toString().slice(-8);
+  
+  if (adminAccessRequested && !isAdminSession) {
+    showAdminAccessWarning();
+  }
+  
+  updateUserDisplay();
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+  showToast('Welcome to Chatly, ' + name + '!', 'success');
+});
+
+document.getElementById('skip-username-btn').addEventListener('click', () => {
+  currentUser.name = 'User ' + Date.now().toString().slice(-4);
+  currentUser.username = 'user' + Date.now().toString().slice(-6);
+  currentUser.id = 'U' + Date.now().toString().slice(-8);
+  
+  if (adminAccessRequested && !isAdminSession) {
+    showAdminAccessWarning();
+  }
+  
+  updateUserDisplay();
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+  showToast('Welcome to Chatly!', 'success');
+});
+
+function getVerificationStatus(user) {
+  if (user.verificationStatus === 'google_guest') return 'Google Guest (View Only)';
+  if (user.adminVerified) return 'Admin Verified';
+  if (user.emailVerified && user.phoneVerified) return 'Email & Phone Verified';
+  if (user.emailVerified) return 'Email Verified';
+  if (user.phoneVerified) return 'Phone Verified';
+  return 'Unverified';
+}
+
+function getVerificationLevel(user) {
+  if (user.verificationStatus === 'google_guest') return 'google_guest';
+  if (user.adminVerified) return 'admin_verified';
+  if (user.emailVerified && user.phoneVerified) return 'both_verified';
+  if (user.emailVerified) return 'email_verified';
+  if (user.phoneVerified) return 'phone_verified';
+  return 'unverified';
+}
+
+function updateUserDisplay() {
+  const hasAnyVerification = currentUser.phoneVerified || currentUser.emailVerified || currentUser.adminVerified;
+  const isGuest = currentUser.verificationStatus === 'google_guest';
+  
+  document.getElementById('user-display-name').innerHTML = currentUser.name + (hasAnyVerification ? ' <span class="verified-check"><i data-lucide="check" class="w-3 h-3"></i></span>' : '');
+  document.getElementById('user-username-badge').innerHTML = '@' + currentUser.username + (isGuest ? ' <span class="ml-1 text-xs guest-badge text-white px-2 py-0.5 rounded-full">Guest</span>' : '');
+  document.getElementById('profile-name-display').innerHTML = currentUser.name;
+  document.getElementById('profile-phone').textContent = currentUser.phone || 'Not linked';
+  document.getElementById('profile-email').textContent = currentUser.email || (isGuest ? 'Google Account' : 'Not linked');
+  document.getElementById('profile-username').textContent = '@' + currentUser.username;
+  document.getElementById('profile-userid').textContent = currentUser.id;
+  document.getElementById('profile-status').textContent = currentUser.status;
+  document.getElementById('profile-verification-status').textContent = getVerificationStatus(currentUser);
+  
+  if (currentUser.adminVerified && currentUser.verificationNote) {
+    document.getElementById('profile-verification-note').textContent = `Note: ${currentUser.verificationNote}`;
+  } else if (isGuest) {
+    document.getElementById('profile-verification-note').textContent = 'View Only: Verify phone or email for full access';
+  } else {
+    document.getElementById('profile-verification-note').textContent = '';
+  }
+  
+  document.getElementById('phone-verified-status').classList.toggle('hidden', !currentUser.phoneVerified);
+  document.getElementById('email-verified-status').classList.toggle('hidden', !currentUser.emailVerified);
+  document.getElementById('profile-verified-badge').classList.toggle('hidden', !hasAnyVerification || isGuest);
+  document.getElementById('profile-guest-badge').classList.toggle('hidden', !isGuest);
+  document.getElementById('guest-upgrade-section').classList.toggle('hidden', !isGuest);
+  
+  if (currentUser.adminVerified) {
+    document.getElementById('profile-verified-badge').innerHTML = '<i data-lucide="badge-check" class="w-3 h-3"></i> Admin Verified';
+  } else {
+    document.getElementById('profile-verified-badge').innerHTML = '<i data-lucide="badge-check" class="w-3 h-3"></i> Verified';
+  }
+  
+  document.getElementById('link-phone-btn').classList.toggle('hidden', !!currentUser.phone && !isGuest);
+  document.getElementById('link-email-btn').classList.toggle('hidden', !!currentUser.email && !isGuest && currentUser.verificationStatus !== 'google_guest');
+  
+  document.getElementById('admin-panel-btn').classList.toggle('hidden', !isAdminSession);
+  document.getElementById('admin-logout-btn').classList.toggle('hidden', !isAdminSession);
+  
+  lucide.createIcons();
+  generateQRCode();
+  updateAdminStats();
+}
+
+document.getElementById('profile-btn').addEventListener('click', () => {
+  document.getElementById('profile-modal').classList.remove('hidden');
+});
+
+document.getElementById('close-profile').addEventListener('click', () => {
+  document.getElementById('profile-modal').classList.add('hidden');
+});
+
+document.getElementById('copy-username-btn').addEventListener('click', () => {
+  navigator.clipboard.writeText('@' + currentUser.username);
+  showToast('Username copied to clipboard', 'success');
+});
+
+document.getElementById('copy-userid-btn').addEventListener('click', () => {
+  navigator.clipboard.writeText(currentUser.id);
+  showToast('User ID copied to clipboard', 'success');
+});
+
+document.getElementById('share-profile-btn').addEventListener('click', () => {
+  const shareUrl = `https://chatly.app/${currentUser.username}`;
+  if (navigator.share) {
+    navigator.share({
+      title: 'Chat with me on Chatly',
+      text: `Message me on Chatly: @${currentUser.username}`,
+      url: shareUrl
+    }).catch(() => {
+      navigator.clipboard.writeText(shareUrl);
+      showToast('Profile link copied!', 'success');
+    });
+  } else {
+    navigator.clipboard.writeText(shareUrl);
+    showToast('Profile link copied!', 'success');
+  }
+});
+
+let currentLinkType = 'email';
+
+function openLinkModal(type) {
+  currentLinkType = type;
+  document.getElementById('link-modal-title').textContent = type === 'email' ? 'Link Email' : 'Link Phone';
+  document.getElementById('link-email-section').classList.toggle('hidden', type !== 'email');
+  document.getElementById('link-phone-section').classList.toggle('hidden', type !== 'phone');
+  document.getElementById('link-input-section').classList.remove('hidden');
+  document.getElementById('link-otp-section').classList.add('hidden');
+  document.getElementById('link-contact-modal').classList.remove('hidden');
+}
+
+document.getElementById('link-email-btn').addEventListener('click', () => openLinkModal('email'));
+document.getElementById('link-phone-btn').addEventListener('click', () => openLinkModal('phone'));
+document.getElementById('link-new-email-btn').addEventListener('click', () => openLinkModal('email'));
+document.getElementById('link-new-phone-btn').addEventListener('click', () => openLinkModal('phone'));
+
+document.getElementById('close-link-modal').addEventListener('click', () => {
+  document.getElementById('link-contact-modal').classList.add('hidden');
+});
+
+document.getElementById('link-phone-input').addEventListener('input', (e) => {
+  e.target.value = e.target.value.replace(/[^0-9]/g, '');
+});
+
+document.getElementById('send-link-otp-btn').addEventListener('click', async () => {
+  let contact, validation;
+  const btn = document.getElementById('send-link-otp-btn');
+  const btnText = document.getElementById('send-link-otp-text');
+  const btnLoader = document.getElementById('send-link-otp-loader');
+  
+  if (currentLinkType === 'email') {
+    contact = document.getElementById('link-email-input').value.trim();
+    validation = validateEmail(contact);
+    document.getElementById('link-email-error').classList.toggle('hidden', validation.valid);
+    if (!validation.valid) {
+      document.getElementById('link-email-error').textContent = validation.message;
+      return;
+    }
+  } else {
+    const phone = document.getElementById('link-phone-input').value.trim();
+    const countryCode = document.getElementById('link-country-code').value;
+    validation = validatePhoneNumber(countryCode, phone);
+    document.getElementById('link-phone-error').classList.toggle('hidden', validation.valid);
+    if (!validation.valid) {
+      document.getElementById('link-phone-error').textContent = validation.message;
+      return;
+    }
+    contact = countryCode + ' ' + validation.cleaned;
+  }
+  
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  btnLoader.classList.remove('hidden');
+  
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  linkOtpState.code = currentLinkType === 'phone' ? '999999' : '888888';
+  linkOtpState.contact = contact;
+  linkOtpState.type = currentLinkType;
+  linkOtpState.attempts = 0;
+  
+  console.log('[DEV] Link OTP for ' + contact + ': ' + linkOtpState.code);
+  
+  document.getElementById('link-contact-display').textContent = contact;
+  document.getElementById('link-input-section').classList.add('hidden');
+  document.getElementById('link-otp-section').classList.remove('hidden');
+  
+  btn.disabled = false;
+  btnText.classList.remove('hidden');
+  btnLoader.classList.add('hidden');
+  
+  document.querySelector('.link-otp-input input').focus();
+  showToast(`Verification code sent (Demo: ${linkOtpState.code})`, 'success');
+});
+
+document.getElementById('back-to-link-input').addEventListener('click', () => {
+  document.getElementById('link-otp-section').classList.add('hidden');
+  document.getElementById('link-input-section').classList.remove('hidden');
+});
+
+const linkOtpInputs = document.querySelectorAll('.link-otp-input input');
+
+linkOtpInputs.forEach((input, index) => {
+  input.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    if (e.target.value && index < linkOtpInputs.length - 1) {
+      linkOtpInputs[index + 1].focus();
+    }
+    const otp = Array.from(linkOtpInputs).map(i => i.value).join('');
+    if (otp.length === 6) {
+      setTimeout(() => document.getElementById('verify-link-otp-btn').click(), 300);
+    }
+    e.target.classList.remove('border-red-500');
+    document.getElementById('link-otp-error').classList.add('hidden');
+  });
+  
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Backspace' && !e.target.value && index > 0) {
+      linkOtpInputs[index - 1].focus();
+    }
+    if (e.key === 'ArrowLeft' && index > 0) {
+      linkOtpInputs[index - 1].focus();
+    }
+    if (e.key === 'ArrowRight' && index < linkOtpInputs.length - 1) {
+      linkOtpInputs[index + 1].focus();
+    }
+  });
+  
+  input.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const paste = (e.clipboardData || window.clipboardData).getData('text');
+    const digits = paste.replace(/[^0-9]/g, '').slice(0, 6).split('');
+    digits.forEach((digit, i) => {
+      if (linkOtpInputs[i]) linkOtpInputs[i].value = digit;
+    });
+    if (digits.length === 6) {
+      setTimeout(() => document.getElementById('verify-link-otp-btn').click(), 300);
+    } else if (digits.length > 0) {
+      linkOtpInputs[Math.min(digits.length, linkOtpInputs.length - 1)].focus();
+    }
+  });
+});
+
+document.getElementById('verify-link-otp-btn').addEventListener('click', async () => {
+  const otp = Array.from(linkOtpInputs).map(i => i.value).join('');
+  const errorEl = document.getElementById('link-otp-error');
+  const btn = document.getElementById('verify-link-otp-btn');
+  const btnText = document.getElementById('verify-link-otp-text');
+  const btnLoader = document.getElementById('verify-link-otp-loader');
+  
+  if (otp.length !== 6) {
+    errorEl.textContent = 'Please enter complete 6-digit code';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  
+  btn.disabled = true;
+  btnText.classList.add('hidden');
+  btnLoader.classList.remove('hidden');
+  
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  if (otp === linkOtpState.code) {
+    if (linkOtpState.type === 'email') {
+      currentUser.email = linkOtpState.contact;
+      currentUser.emailVerified = true;
+      currentUser.verificationStatus = currentUser.phoneVerified ? 'both_verified' : 'email_verified';
+      showToast('Email linked successfully!', 'success');
+    } else {
+      currentUser.phone = linkOtpState.contact;
+      currentUser.phoneVerified = true;
+      currentUser.verificationStatus = currentUser.emailVerified ? 'both_verified' : 'phone_verified';
+      showToast('Phone number linked successfully!', 'success');
+    }
+    if (isGoogleGuestUser && (currentUser.emailVerified || currentUser.phoneVerified)) {
+      disableGuestMode();
+      showToast('Full access unlocked! You can now send messages and make calls.', 'success');
+    }
+    updateUserDisplay();
+    document.getElementById('link-contact-modal').classList.add('hidden');
+    linkOtpInputs.forEach(input => input.value = '');
+  } else {
+    linkOtpState.attempts++;
+    if (linkOtpState.attempts >= linkOtpState.maxAttempts) {
+      errorEl.textContent = 'Too many wrong attempts';
+      showToast('Too many wrong attempts', 'error');
+    } else {
+      errorEl.textContent = `Invalid code. ${linkOtpState.maxAttempts - linkOtpState.attempts} attempts remaining.`;
+      errorEl.classList.remove('hidden');
+      linkOtpInputs.forEach(input => {
+        input.value = '';
+        input.classList.add('border-red-500');
+      });
+      linkOtpInputs[0].focus();
+    }
+  }
+  
+  btn.disabled = false;
+  btnText.classList.remove('hidden');
+  btnLoader.classList.add('hidden');
+});
+
+// Admin Panel
+let selectedAdminUser = null;
+
+document.getElementById('admin-panel-btn').addEventListener('click', () => {
+  if (!isAdminSession) {
+    showToast('Admin access required', 'error');
+    return;
+  }
+  document.getElementById('admin-panel-modal').classList.remove('hidden');
+  renderAdminUserList();
+});
+
+document.getElementById('close-admin-panel').addEventListener('click', () => {
+  document.getElementById('admin-panel-modal').classList.add('hidden');
+});
+
+function updateAdminStats() {
+  const total = mockUsers.length;
+  const adminVerified = mockUsers.filter(u => u.adminVerified).length;
+  const emailVerified = mockUsers.filter(u => u.emailVerified).length;
+  const phoneVerified = mockUsers.filter(u => u.phoneVerified).length;
+  const guests = mockUsers.filter(u => u.verificationStatus === 'google_guest').length;
+  
+  document.getElementById('admin-stat-total').textContent = total;
+  document.getElementById('admin-stat-verified').textContent = adminVerified;
+  document.getElementById('admin-stat-email').textContent = emailVerified;
+  document.getElementById('admin-stat-phone').textContent = phoneVerified;
+  document.getElementById('admin-stat-guest').textContent = guests;
+}
+
+function renderAdminUserList() {
+  const searchQuery = document.getElementById('admin-search-input').value.toLowerCase();
+  const filterStatus = document.getElementById('admin-filter-status').value;
+  
+  let filteredUsers = mockUsers.filter(user => {
+    const matchSearch = !searchQuery || 
+      user.name.toLowerCase().includes(searchQuery) ||
+      user.username.toLowerCase().includes(searchQuery) ||
+      (user.email && user.email.toLowerCase().includes(searchQuery)) ||
+      (user.phone && user.phone.toLowerCase().includes(searchQuery)) ||
+      user.id.toLowerCase().includes(searchQuery);
+    
+    const matchFilter = filterStatus === 'all' || 
+      (filterStatus === 'admin_verified' && user.adminVerified) ||
+      (filterStatus === 'email_verified' && user.emailVerified && !user.adminVerified) ||
+      (filterStatus === 'phone_verified' && user.phoneVerified && !user.adminVerified && !user.emailVerified) ||
+      (filterStatus === 'google_guest' && user.verificationStatus === 'google_guest') ||
+      (filterStatus === 'unverified' && !user.adminVerified && !user.emailVerified && !user.phoneVerified && user.verificationStatus !== 'google_guest');
+    
+    return matchSearch && matchFilter;
+  });
+  
+  const tbody = document.getElementById('admin-user-list');
+  tbody.innerHTML = filteredUsers.map(user => {
+    const status = getVerificationStatus(user);
+    const isGuest = user.verificationStatus === 'google_guest';
+    const statusClass = user.adminVerified ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
+                       user.emailVerified || user.phoneVerified ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300' :
+                       isGuest ? 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' :
+                       'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+    
+    return `
+      <tr class="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
+        <td class="py-3 px-4">
+          <div class="flex items-center gap-3">
+            <img src="${user.avatar}" class="w-10 h-10 rounded-full">
+            <div>
+              <p class="font-semibold flex items-center gap-1">
+                ${user.name}
+                ${user.adminVerified ? '<span class="verified-check !w-4 !h-4"><i data-lucide="check" class="w-2.5 h-2.5"></i></span>' : ''}
+                ${isGuest ? '<span class="text-xs guest-badge text-white px-1.5 py-0.5 rounded-full">Guest</span>' : ''}
+              </p>
+              <p class="text-xs opacity-70">@${user.username}</p>
+            </div>
+          </div>
+        </td>
+        <td class="py-3 px-4">
+          <p class="text-xs">${user.email || '-'}</p>
+          <p class="text-xs opacity-70">${user.phone || '-'}</p>
+          <p class="text-xs opacity-50 font-mono">${user.id}</p>
+        </td>
+        <td class="py-3 px-4">
+          <span class="px-2 py-1 rounded-full text-xs font-semibold ${statusClass}">${status}</span>
+        </td>
+        <td class="py-3 px-4 text-xs opacity-70">
+          ${user.verificationDate || '-'}
+          ${user.verificationNote ? `<br><span class="text-xs opacity-50">${user.verificationNote}</span>` : ''}
+        </td>
+        <td class="py-3 px-4 text-center">
+          <button onclick="openVerificationManagement('${user.id}')" class="px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white rounded-lg text-xs font-semibold transition min-h-[32px]">
+            Manage
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+  
+  lucide.createIcons();
+}
+
+document.getElementById('admin-search-input').addEventListener('input', renderAdminUserList);
+document.getElementById('admin-filter-status').addEventListener('change', renderAdminUserList);
+
+function openVerificationManagement(userId) {
+  const user = mockUsers.find(u => u.id === userId);
+  if (!user) return;
+  
+  selectedAdminUser = user;
+  
+  document.getElementById('verify-user-avatar').src = user.avatar;
+  document.getElementById('verify-user-name').textContent = user.name;
+  document.getElementById('verify-user-username').textContent = '@' + user.username;
+  document.getElementById('verify-current-status').textContent = getVerificationStatus(user);
+  document.getElementById('verify-current-date').textContent = user.verificationDate ? `Since: ${user.verificationDate}` : '';
+  
+  const statusSelect = document.getElementById('verify-status-select');
+  statusSelect.value = getVerificationLevel(user);
+  
+  document.getElementById('verify-reason-input').value = user.verificationNote || '';
+  document.getElementById('verify-reason-section').classList.toggle('hidden', statusSelect.value !== 'admin_verified');
+  
+  statusSelect.addEventListener('change', (e) => {
+    document.getElementById('verify-reason-section').classList.toggle('hidden', e.target.value !== 'admin_verified');
+  });
+  
+  document.getElementById('verification-management-modal').classList.remove('hidden');
+}
+
+document.getElementById('close-verification-management').addEventListener('click', () => {
+  document.getElementById('verification-management-modal').classList.add('hidden');
+  selectedAdminUser = null;
+});
+
+document.getElementById('cancel-verification-btn').addEventListener('click', () => {
+  document.getElementById('verification-management-modal').classList.add('hidden');
+  selectedAdminUser = null;
+});
+
+document.getElementById('save-verification-btn').addEventListener('click', () => {
+  if (!selectedAdminUser) return;
+  
+  const newStatus = document.getElementById('verify-status-select').value;
+  const reason = document.getElementById('verify-reason-input').value.trim();
+  
+  selectedAdminUser.adminVerified = newStatus === 'admin_verified';
+  selectedAdminUser.emailVerified = newStatus === 'email_verified' || newStatus === 'both_verified' || selectedAdminUser.emailVerified;
+  selectedAdminUser.phoneVerified = newStatus === 'phone_verified' || newStatus === 'both_verified' || selectedAdminUser.phoneVerified;
+  selectedAdminUser.verificationStatus = newStatus;
+  selectedAdminUser.verificationNote = newStatus === 'admin_verified' ? reason : '';
+  selectedAdminUser.verificationDate = newStatus === 'admin_verified' ? new Date().toISOString().split('T')[0] : selectedAdminUser.verificationDate;
+  
+  if (newStatus === 'google_guest') {
+    selectedAdminUser.verificationStatus = 'google_guest';
+  }
+  
+  if (newStatus === 'unverified') {
+    selectedAdminUser.verificationDate = null;
+    selectedAdminUser.verificationNote = '';
+  }
+  
+  showToast(`Verification status updated for ${selectedAdminUser.name}`, 'success');
+  document.getElementById('verification-management-modal').classList.add('hidden');
+  renderAdminUserList();
+  updateAdminStats();
+  updateUserDisplay();
+  selectedAdminUser = null;
+});
+
+function generateQRCode() {
+  const canvas = document.getElementById('qr-canvas');
+  if (!canvas) return;
+  const profileUrl = `https://chatly.app/${currentUser.username}`;
+  QRCode.toCanvas(canvas, profileUrl, {
+    width: 200,
+    margin: 1,
+    color: {
+      dark: isDark ? '#f1f5f9' : '#0f172a',
+      light: isDark ? '#1e293b' : '#ffffff'
+    }
+  });
+}
+
+document.getElementById('settings-btn').addEventListener('click', () => {
+  document.getElementById('settings-modal').classList.remove('hidden');
+});
+
+document.getElementById('close-settings').addEventListener('click', () => {
+  document.getElementById('settings-modal').classList.add('hidden');
+});
+
+document.getElementById('settings-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'settings-modal') {
+    document.getElementById('settings-modal').classList.add('hidden');
+  }
+});
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase();
+  if (query.startsWith('@')) {
+    console.log('Searching for username:', query);
+  } else if (query.match(/^\+?\d+/)) {
+    console.log('Searching for phone:', query);
+  } else if (query.match(/@/)) {
+    console.log('Searching for email:', query);
+  }
+  
+  if (query.length > 2) {
+    const results = mockUsers.filter(u => 
+      u.name.toLowerCase().includes(query) ||
+      u.username.toLowerCase().includes(query) ||
+      (u.email && u.email.toLowerCase().includes(query)) ||
+      (u.phone && u.phone.toLowerCase().includes(query))
+    );
+    console.log('Search results:', results);
+  }
+});
+
+document.getElementById('sync-contacts-btn').addEventListener('click', () => {
+  showToast('Contacts synced! Found 12 Chatly users', 'success');
+});
+
+const tabBtns = document.querySelectorAll('.tab-btn');
+const lists = {
+  chats: document.getElementById('chats-list'),
+  groups: document.getElementById('groups-list'),
+  contacts: document.getElementById('contacts-list')
+};
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    tabBtns.forEach(b => {
+      b.classList.remove('border-violet-600', 'text-violet-600');
+      b.classList.add('opacity-60');
+    });
+    btn.classList.add('border-violet-600', 'text-violet-600');
+    btn.classList.remove('opacity-60');
+    
+    Object.values(lists).forEach(l => l.classList.add('hidden'));
+    lists[tab].classList.remove('hidden');
+  });
+});
+
+const chatItems = document.querySelectorAll('.chat-item');
+const emptyChat = document.getElementById('empty-chat');
+const activeChat = document.getElementById('active-chat');
+const sidebar = document.getElementById('sidebar');
+
+chatItems.forEach(item => {
+  item.addEventListener('click', () => {
+    emptyChat.classList.add('hidden');
+    activeChat.classList.remove('hidden');
+    if (window.innerWidth < 768) {
+      sidebar.classList.add('hidden');
+    }
+  });
+});
+
+document.getElementById('back-btn')?.addEventListener('click', () => {
+  sidebar.classList.remove('hidden');
+  activeChat.classList.add('hidden');
+  emptyChat.classList.remove('hidden');
+});
+
+const messageInput = document.getElementById('message-input');
+const sendBtn = document.getElementById('send-btn');
+const messagesContainer = document.getElementById('messages-container');
+
+function sendMessage() {
+  if (isGoogleGuestUser) {
+    showToast('Verify phone or email to send messages', 'warning');
+    return;
+  }
+  const text = messageInput.value.trim();
+  if (!text) return;
+  
+  const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const msgHTML = `
+    <div class="flex justify-end">
+      <div class="chat-bubble bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white rounded-2xl rounded-tr-sm px-4 py-2.5 shadow-md">
+        <p class="text-sm">${text}</p>
+        <span class="text-xs opacity-80 mt-1 block text-right">${time} ✓✓</span>
+      </div>
+    </div>
+  `;
+  messagesContainer.insertAdjacentHTML('beforeend', msgHTML);
+  messageInput.value = '';
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  
+  document.getElementById('typing-indicator').classList.remove('hidden');
+  setTimeout(() => {
+    document.getElementById('typing-indicator').classList.add('hidden');
+    const replyHTML = `
+      <div class="flex justify-start">
+        <div class="chat-bubble bg-white dark:bg-slate-800 rounded-2xl rounded-tl-sm px-4 py-2.5 shadow-sm">
+          <p class="text-sm">Got it! 👍</p>
+          <span class="text-xs opacity-50 mt-1 block">${new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+        </div>
+      </div>
+    `;
+    messagesContainer.insertAdjacentHTML('beforeend', replyHTML);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }, 2000);
+}
+
+sendBtn.addEventListener('click', sendMessage);
+messageInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+document.getElementById('ai-assist-btn').addEventListener('click', () => {
+  if (isGoogleGuestUser) {
+    showToast('Verify phone or email to use AI Assistant', 'warning');
+    return;
+  }
+  document.getElementById('pro-modal').classList.remove('hidden');
+});
+
+document.querySelectorAll('.story-item').forEach(item => {
+  item.addEventListener('click', () => {
+    if (isGoogleGuestUser) {
+      showToast('Verify phone or email to view stories', 'warning');
+      return;
+    }
+    document.getElementById('story-modal').classList.remove('hidden');
+  });
+});
+
+document.getElementById('close-story').addEventListener('click', () => {
+  document.getElementById('story-modal').classList.add('hidden');
+});
+
+const callModal = document.getElementById('call-modal');
+document.getElementById('voice-call-btn').addEventListener('click', () => {
+  if (isGoogleGuestUser) {
+    showToast('Verify phone or email to make voice calls', 'warning');
+    return;
+  }
+  callModal.classList.remove('hidden');
+  document.getElementById('call-status').textContent = 'Voice Calling... / ভয়েস কল হচ্ছে...';
+  setTimeout(() => {
+    document.getElementById('call-status').textContent = 'Connected • 00:02';
+  }, 3000);
+});
+
+document.getElementById('video-call-btn').addEventListener('click', () => {
+  if (isGoogleGuestUser) {
+    showToast('Verify phone or email to make video calls', 'warning');
+    return;
+  }
+  callModal.classList.remove('hidden');
+  document.getElementById('call-status').textContent = 'Video Calling... / ভিডিও কল হচ্ছে...';
+  setTimeout(() => {
+    document.getElementById('call-status').textContent = 'Connected • 00:01';
+  }, 3000);
+});
+
+document.getElementById('end-call-btn').addEventListener('click', () => {
+  callModal.classList.add('hidden');
+});
+
+document.getElementById('pro-btn').addEventListener('click', () => {
+  document.getElementById('pro-modal').classList.remove('hidden');
+});
+
+document.getElementById('close-pro').addEventListener('click', () => {
+  document.getElementById('pro-modal').classList.add('hidden');
+});
+
+document.getElementById('story-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'story-modal') {
+    document.getElementById('story-modal').classList.add('hidden');
+  }
+});
+
+document.getElementById('pro-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'pro-modal') {
+    document.getElementById('pro-modal').classList.add('hidden');
+  }
+});
+
+document.getElementById('profile-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'profile-modal') {
+    document.getElementById('profile-modal').classList.add('hidden');
+  }
+});
+
+document.getElementById('link-contact-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'link-contact-modal') {
+    document.getElementById('link-contact-modal').classList.add('hidden');
+  }
+});
+
+document.getElementById('admin-panel-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'admin-panel-modal') {
+    document.getElementById('admin-panel-modal').classList.add('hidden');
+  }
+});
+
+document.getElementById('verification-management-modal').addEventListener('click', (e) => {
+  if (e.target.id === 'verification-management-modal') {
+    document.getElementById('verification-management-modal').classList.add('hidden');
+  }
+});
+
+document.getElementById('chat-info-btn')?.addEventListener('click', () => {
+  showToast('Chat Info: Rahul Ahmed @rahul_ahmed', 'info');
+});
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth >= 768) {
+    sidebar.classList.remove('hidden');
+  }
+});
+
+document.addEventListener('keypress', (e) => {
+  if (e.target.closest('.otp-input') && e.key === 'Enter') {
+    e.preventDefault();
+  }
+});
+
+// Initialize
+checkAdminURLParam();
+updateAdminStats();
+window.openVerificationManagement = openVerificationManagement;
+</script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+
+</div></div></body></html>
